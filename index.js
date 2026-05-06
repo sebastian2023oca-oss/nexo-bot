@@ -123,7 +123,7 @@ async function iniciarBot() {
         }
     })
 
-    // Esperar a que los chats estén listos antes de procesar mensajes
+    // Esperar a que los chats estén listos antes de procesar mensajes (borrar session para probar)
     sock.ev.on('messaging-history.set', () => {
         console.log('✅ Chats sincronizados, bot listo.')
     })
