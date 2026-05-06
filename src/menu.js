@@ -2,12 +2,14 @@ import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import menu1 from './menu1.js'
+import menu2 from './menu2.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
 
 const submenus = {
     1: menu1,
+    2: menu2,
 }
 
 const menuTexto = `╔════════════════════════════════╗
@@ -53,9 +55,7 @@ const menuTexto = `╔═══════════════════�
 
   ✦ .menu <n>    → ir a una página
   ✦ .menu 1      → ver Perfil
-  ✦ .menu 22     → ver GIFs y acciones
-  ✦ .menu 23     → ver VIP
-  ✦ .menu 24     → ver +18
+  ✦ .menu 2      → ver Economía
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -63,8 +63,8 @@ const menuTexto = `╔═══════════════════�
 
   ➪ .rules       → reglas del bot
   ➪ .addbot      → añadir a tu grupo
-  ➪ .buyvip      → membresía VIP         
-  ➪ .buynegocio  → plan Negocios         
+  ➪ .buyvip      → membresía VIP
+  ➪ .buynegocio  → plan Negocios
 
 ╚══════════════════════════════╝`
 

@@ -27,6 +27,23 @@ import block from './src/block.js'
 import id from './src/id.js'
 import avatar from './src/avatar.js'
 
+// Economía
+import balance from './src/balance.js'
+import banco from './src/banco.js'
+import saldo from './src/saldo.js'
+import work from './src/work.js'
+import daily from './src/daily.js'
+import interes from './src/interes.js'
+import transferir from './src/transferir.js'
+import pagar from './src/pagar.js'
+import invertir from './src/invertir.js'
+import rentabilidad from './src/rentabilidad.js'
+import prestamo from './src/prestamo.js'
+import loteria from './src/loteria.js'
+import ruleta from './src/ruleta.js'
+import robar from './src/robar.js'
+import shopcoins from './src/shopcoins.js'
+
 const PREFIJO = '.'
 
 const comandos = {
@@ -55,6 +72,21 @@ const comandos = {
     block,
     id,
     avatar,
+    balance,
+    banco,
+    saldo,
+    work,
+    daily,
+    interes,
+    transferir,
+    pagar,
+    invertir,
+    rentabilidad,
+    prestamo,
+    loteria,
+    ruleta,
+    robar,
+    shopcoins,
 }
 
 const permitidosEnPrivado = ['addbot']
