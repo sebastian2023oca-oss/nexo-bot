@@ -63,8 +63,8 @@ const menuTexto = `╔═══════════════════�
 
   ➪ .rules       → reglas del bot
   ➪ .addbot      → añadir a tu grupo
-  ➪ .buyvip      → membresía VIP · $1/mes
-  ➪ .buynegocio  → plan Negocios · $3/mes
+  ➪ .buyvip      → membresía VIP         
+  ➪ .buynegocio  → plan Negocios         
 
 ╚══════════════════════════════╝`
 
