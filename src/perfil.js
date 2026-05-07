@@ -36,10 +36,15 @@ const perfil = {
         const userId = String(u.id).padStart(3, '0')
         const total = String(totalRows[0].total).padStart(3, '0')
 
+        // Marco especial o normal
+        const tienMarco = u.marco === 1
+        const topBorder = tienMarco ? `╔══⭐ PERFIL ESPECIAL ⭐══╗` : `╔══════════════════════════╗`
+        const botBorder = tienMarco ? `╚══⭐════════════════⭐══╝` : `╚══════════════════════════╝`
+
         await sock.sendMessage(jid, {
-            text: `╔══════════════════════════╗
+            text: `${topBorder}
 ║     👤 PERFIL DE USUARIO     ║
-╚══════════════════════════╝
+${botBorder}
 
 👤 *Nombre:* ${nombre}
 🆔 *ID:* #${userId}
@@ -68,7 +73,7 @@ const perfil = {
 🏢 *Negocio:* ${u.negocio ? '✅ Activo' : '❌ Inactivo'}
 ⭐ *Reputación:* ${u.reputacion || 0}
 
-╚══════════════════════════╝`
+${botBorder}`
         }, { quoted: mensaje })
     }
 }

@@ -37,6 +37,20 @@ const robar = {
             return
         }
 
+        // Verificar escudo de la víctima
+        const [escudo] = await db.execute(
+            'SELECT * FROM items_activos WHERE jid = ? AND item = "escudo" AND expira > NOW()',
+            [mencionado]
+        )
+
+        if (escudo.length > 0) {
+            await sock.sendMessage(jid, {
+                text: `🛡️ *¡ROBO BLOQUEADO!*\n\n@${mencionado.split('@')[0]} tiene un escudo anti-robo activo.\n\n❌ No pudiste robarle nada.`,
+                mentions: [mencionado]
+            }, { quoted: mensaje })
+            return
+        }
+
         // 40% éxito, 60% fallo
         const exito = Math.random() < 0.4
 

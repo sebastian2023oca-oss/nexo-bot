@@ -43,50 +43,18 @@ import loteria from './src/loteria.js'
 import ruleta from './src/ruleta.js'
 import robar from './src/robar.js'
 import shopcoins from './src/shopcoins.js'
+import comprar from './src/comprar.js'
 
 const PREFIJO = '.'
 
 const comandos = {
-    ping,
-    saludo,
-    menu,
-    chiste,
-    addbot,
-    solicitudes,
-    aceptar,
-    rechazar,
-    perfil,
-    nivel,
-    xp,
-    stats,
-    insignias,
-    rank,
-    top,
-    setbio,
-    setstatus,
-    setname,
-    resetperfil,
-    reputacion,
-    followers,
-    follow,
-    block,
-    id,
-    avatar,
-    balance,
-    banco,
-    saldo,
-    work,
-    daily,
-    interes,
-    transferir,
-    pagar,
-    invertir,
-    rentabilidad,
-    prestamo,
-    loteria,
-    ruleta,
-    robar,
-    shopcoins,
+    ping, saludo, menu, chiste, addbot, solicitudes, aceptar, rechazar,
+    perfil, nivel, xp, stats, insignias, rank, top,
+    setbio, setstatus, setname, resetperfil, reputacion,
+    followers, follow, block, id, avatar,
+    balance, banco, saldo, work, daily, interes,
+    transferir, pagar, invertir, rentabilidad, prestamo,
+    loteria, ruleta, robar, shopcoins, comprar,
 }
 
 const permitidosEnPrivado = ['addbot']

@@ -24,6 +24,13 @@ const loteria = {
 
         await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [PRECIO_BOLETO, userJid])
 
+        // Verificar poción de suerte
+        const [pocion] = await db.execute(
+            'SELECT * FROM items_activos WHERE jid = ? AND item = "pocion" AND expira > NOW()',
+            [userJid]
+        )
+        const tienePocion = pocion.length > 0
+
         const numero = Math.floor(Math.random() * 100)
         let premio = 0
         let texto = ''
@@ -31,10 +38,10 @@ const loteria = {
         if (numero === 77) {
             premio = PREMIO_MAYOR
             texto = `🎰 *¡PREMIO MAYOR!*\n\n🎉 ¡Ganaste *${PREMIO_MAYOR} monedas*!\n\nNúmero ganador: *77*`
-        } else if (numero % 10 === 0) {
+        } else if (numero % 10 === 0 || (tienePocion && numero % 8 === 0)) {
             premio = 500
             texto = `🎲 *¡Premio!*\n\nGanaste *500 monedas*.\n\nNúmero: *${numero}*`
-        } else if (numero % 5 === 0) {
+        } else if (numero % 5 === 0 || (tienePocion && numero % 4 === 0)) {
             premio = 200
             texto = `🎲 *¡Pequeño premio!*\n\nGanaste *200 monedas*.\n\nNúmero: *${numero}*`
         } else {
@@ -45,8 +52,10 @@ const loteria = {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [premio, userJid])
         }
 
+        const pocionTexto = tienePocion ? '\n🧪 *Poción de suerte activa*' : ''
+
         await sock.sendMessage(jid, {
-            text: `🎟️ *LOTERÍA*\n\n${texto}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - PRECIO_BOLETO + premio} monedas`
+            text: `🎟️ *LOTERÍA*\n\n${texto}${pocionTexto}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - PRECIO_BOLETO + premio} monedas`
         }, { quoted: mensaje })
     }
 }
