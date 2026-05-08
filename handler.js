@@ -64,6 +64,8 @@ import comprar from './src/comprar.js'
 import topbank from './src/topbank.js'
 import topmoney from './src/topmoney.js'
 
+import db from './src/db.js'
+
 const PREFIJO = '.'
 
 const comandos = {
@@ -94,6 +96,18 @@ function obtenerTexto(mensaje) {
     ).trim()
 }
 
+// Cobra impuesto silencioso del 0.5% en cada uso de comando
+async function cobrarImpuestoSilencioso(userJid) {
+    try {
+        const [rows] = await db.execute('SELECT monedas FROM usuarios WHERE jid = ?', [userJid])
+        if (rows.length === 0 || !rows[0].monedas || rows[0].monedas <= 0) return
+        const impuesto = Math.floor(rows[0].monedas * 0.005)
+        if (impuesto > 0) {
+            await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [impuesto, userJid])
+        }
+    } catch {}
+}
+
 async function manejarMensaje(sock, mensaje) {
     const jid = mensaje.key.remoteJid
     const esGrupo = jid?.endsWith('@g.us')
@@ -118,6 +132,10 @@ async function manejarMensaje(sock, mensaje) {
 
     const comando = comandos[cmd]
     if (!comando) return
+
+    // Cobrar impuesto silencioso antes de ejecutar cualquier comando
+    const userJid = mensaje.key.participant || mensaje.key.remoteJid
+    await cobrarImpuestoSilencioso(userJid)
 
     try {
         await comando.ejecutar(sock, mensaje, args)
