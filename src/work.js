@@ -35,7 +35,7 @@ const work = {
 
         const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [ganancia, userJid])
-        await registrarCooldown(userJid, 'work', 60)
+        await registrarCooldown(userJid, 'work', 15)
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
