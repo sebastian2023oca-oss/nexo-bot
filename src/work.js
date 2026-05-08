@@ -44,4 +44,4 @@ const work = {
     }
 }
 
-export default workz
+export default work
