@@ -39,7 +39,7 @@ const work = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `💼 *TRABAJO*\n\n${trabajo.texto} y ganaste *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `💼 *TRABAJO*\n\n${trabajo.texto} y ganaste *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n 💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }
