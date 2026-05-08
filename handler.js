@@ -31,19 +31,38 @@ import avatar from './src/avatar.js'
 import balance from './src/balance.js'
 import banco from './src/banco.js'
 import saldo from './src/saldo.js'
+import depositar from './src/depositar.js'
+import retirar from './src/retirar.js'
 import work from './src/work.js'
 import daily from './src/daily.js'
 import interes from './src/interes.js'
+import minar from './src/minar.js'
+import pescar from './src/pescar.js'
+import cazar from './src/cazar.js'
+import recolectar from './src/recolectar.js'
+import negocio from './src/negocio.js'
+import repartir from './src/repartir.js'
+import beg from './src/beg.js'
 import transferir from './src/transferir.js'
 import pagar from './src/pagar.js'
 import invertir from './src/invertir.js'
 import rentabilidad from './src/rentabilidad.js'
 import prestamo from './src/prestamo.js'
+import pagar_prestamo from './src/pagar_prestamo.js'
+import aceptarprestamo from './src/aceptarprestamo.js'
+import rechazarprestamo from './src/rechazarprestamo.js'
+import deuda from './src/deuda.js'
+import apostar from './src/apostar.js'
 import loteria from './src/loteria.js'
 import ruleta from './src/ruleta.js'
 import robar from './src/robar.js'
+import coinflip from './src/coinflip.js'
+import slots from './src/slots.js'
+import blackjack from './src/blackjack.js'
 import shopcoins from './src/shopcoins.js'
 import comprar from './src/comprar.js'
+import topbank from './src/topbank.js'
+import topmoney from './src/topmoney.js'
 
 const PREFIJO = '.'
 
@@ -52,9 +71,14 @@ const comandos = {
     perfil, nivel, xp, stats, insignias, rank, top,
     setbio, setstatus, setname, resetperfil, reputacion,
     followers, follow, block, id, avatar,
-    balance, banco, saldo, work, daily, interes,
-    transferir, pagar, invertir, rentabilidad, prestamo,
-    loteria, ruleta, robar, shopcoins, comprar,
+    balance, banco, saldo, depositar, retirar,
+    work, daily, interes, minar, pescar, cazar, recolectar, negocio, repartir, beg,
+    transferir, pagar,
+    invertir, rentabilidad, prestamo,
+    'pagar_prestamo': pagar_prestamo,
+    aceptarprestamo, rechazarprestamo, deuda, apostar,
+    loteria, ruleta, robar, coinflip, slots, blackjack,
+    shopcoins, comprar, topbank, topmoney,
 }
 
 const permitidosEnPrivado = ['addbot']
@@ -79,7 +103,6 @@ async function manejarMensaje(sock, mensaje) {
     }
 
     const texto = obtenerTexto(mensaje)
-
     if (!texto.startsWith(PREFIJO)) return
 
     const partes = texto.slice(PREFIJO.length).trim().split(/\s+/)
@@ -94,7 +117,6 @@ async function manejarMensaje(sock, mensaje) {
     }
 
     const comando = comandos[cmd]
-
     if (!comando) return
 
     try {

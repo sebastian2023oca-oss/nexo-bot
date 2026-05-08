@@ -8,7 +8,7 @@ const menu2 = {
 ╚════════════════════════════════╝
 
 ▸ Página 2 de 24
-▸ Sistema: Estructura bloqueada
+▸ Sistema: Economía Dinámica
 ▸ Prefijo: .
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -18,6 +18,8 @@ const menu2 = {
   ✦ *.balance* → dinero en mano
   ✦ *.banco* → dinero en el banco
   ✦ *.saldo* → resumen total
+  ✦ *.depositar <cantidad>* → guardar en banco
+  ✦ *.retirar <cantidad>* → sacar del banco
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -26,6 +28,13 @@ const menu2 = {
   ✦ *.work* → trabajar y ganar monedas
   ✦ *.daily* → recompensa diaria
   ✦ *.interes* → ganancias del banco
+  ✦ *.minar* → minería digital
+  ✦ *.pescar* → sistema de pesca
+  ✦ *.cazar* → caza de recompensas
+  ✦ *.recolectar* → buscar objetos valiosos
+  ✦ *.negocio* → negocio virtual
+  ✦ *.repartir* → entregas rápidas
+  ✦ *.beg* → pedir monedas al sistema
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -40,21 +49,35 @@ const menu2 = {
 
   ✦ *.invertir <cantidad>* → invertir
   ✦ *.rentabilidad* → ver inversiones
-  ✦ *.prestamo <cantidad>* → pedir préstamo
+  ✦ *.prestamo <cantidad>* → préstamo del sistema
+  ✦ *.prestamo @usuario <cantidad>* → pedir a usuario
+  ✦ *.pagar_prestamo <cantidad>* → pagar préstamo
+  ✦ *.deuda* → ver deudas activas
+  ✦ *.apostar <cantidad>* → apuesta de alto riesgo
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎲 *CASINO & AZAR*
 
-  ✦ *.loteria* → participar en lotería
+  ✦ *.loteria* → sorteo aleatorio
   ✦ *.ruleta* → juego de azar
   ✦ *.robar @usuario* → intentar robar
+  ✦ *.coinflip <cantidad>* → cara o sello
+  ✦ *.slots* → tragamonedas
+  ✦ *.blackjack* → blackjack contra el sistema
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🏪 *TIENDA ECONÓMICA*
 
   ✦ *.shopcoins* → tienda de monedas
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🏦 *RANKINGS FINANCIEROS*
+
+  ✦ *.topbank* → ranking del banco
+  ✦ *.topmoney* → ranking de riqueza total
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
