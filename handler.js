@@ -101,7 +101,7 @@ async function cobrarImpuestoSilencioso(userJid) {
     try {
         const [rows] = await db.execute('SELECT monedas FROM usuarios WHERE jid = ?', [userJid])
         if (rows.length === 0 || !rows[0].monedas || rows[0].monedas <= 0) return
-        const impuesto = Math.floor(rows[0].monedas * 0.005)
+        const impuesto = Math.floor(rows[0].monedas * 0.001)
         if (impuesto > 0) {
             await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [impuesto, userJid])
         }
