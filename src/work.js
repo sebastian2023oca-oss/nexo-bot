@@ -17,7 +17,7 @@ const work = {
         const jid = mensaje.key.remoteJid
         const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const enCooldown = await verificarCooldown(userJid, 'work', 60)
+        const enCooldown = await verificarCooldown(userJid, 'work', 15)
         if (enCooldown) {
             await sock.sendMessage(jid, { text: `⏳ Ya trabajaste hace poco.\n\n⌛ Podrás trabajar de nuevo en *${enCooldown} minutos*` }, { quoted: mensaje })
             return
@@ -44,4 +44,4 @@ const work = {
     }
 }
 
-export default work
+export default workz
