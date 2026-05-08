@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown } from './utils.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const apostar = {
     async ejecutar(sock, mensaje, args) {
@@ -38,7 +38,6 @@ const apostar = {
         const multiplicador = gano ? (Math.random() < 0.2 ? 3 : 2) : 0
         const ganancia = gano ? cantidad * multiplicador - cantidad : -cantidad
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
         if (gano) {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [ganancia, userJid])
         } else {
@@ -47,7 +46,7 @@ const apostar = {
         await registrarCooldown(userJid, 'apostar', 15)
 
         await sock.sendMessage(jid, {
-            text: `🎯 *APUESTA DE ALTO RIESGO*\n\n${gano ? `✅ ¡Ganaste! Multiplicador: *x${multiplicador}*\n💰 *Ganancia:* +${ganancia} monedas` : `❌ Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `🎯 *APUESTA DE ALTO RIESGO*\n\n${gano ? `✅ ¡Ganaste! Multiplicador: *x${multiplicador}*\n💰 *Ganancia:* +${ganancia} monedas` : `❌ Perdiste *${cantidad} monedas*.`}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia} monedas`
         }, { quoted: mensaje })
     }
 }

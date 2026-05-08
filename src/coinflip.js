@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown } from './utils.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const coinflip = {
     async ejecutar(sock, mensaje, args) {
@@ -35,7 +35,6 @@ const coinflip = {
         }
 
         const resultado = Math.random() < 0.5
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
 
         if (resultado) {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [cantidad, userJid])
@@ -45,7 +44,7 @@ const coinflip = {
         await registrarCooldown(userJid, 'coinflip', 15)
 
         await sock.sendMessage(jid, {
-            text: `🪙 *COIN FLIP*\n\n${resultado ? `🟡 *¡CARA!* Ganaste *${cantidad} monedas*!` : `⚫ *¡SELLO!* Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + (resultado ? cantidad : -cantidad) - impuesto} monedas`
+            text: `🪙 *COIN FLIP*\n\n${resultado ? `🟡 *¡CARA!* Ganaste *${cantidad} monedas*!` : `⚫ *¡SELLO!* Perdiste *${cantidad} monedas*.`}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + (resultado ? cantidad : -cantidad)} monedas`
         }, { quoted: mensaje })
     }
 }

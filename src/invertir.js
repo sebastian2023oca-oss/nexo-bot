@@ -1,4 +1,5 @@
 import db from './db.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const invertir = {
     async ejecutar(sock, mensaje, args) {
@@ -13,14 +14,18 @@ const invertir = {
         }
 
         const cantidad = parseInt(args[0])
-
         if (isNaN(cantidad) || cantidad <= 0) {
             await sock.sendMessage(jid, { text: `❌ La cantidad debe ser un número mayor a 0.` }, { quoted: mensaje })
             return
         }
 
-        const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
+        const enCooldown = await verificarCooldown(userJid, 'invertir', 20)
+        if (enCooldown) {
+            await sock.sendMessage(jid, { text: `⏳ Debes esperar *${enCooldown} minutos* para invertir de nuevo.` }, { quoted: mensaje })
+            return
+        }
 
+        const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
         if (rows.length === 0) {
             await sock.sendMessage(jid, { text: `❌ No estás registrado en el bot.` }, { quoted: mensaje })
             return
@@ -53,6 +58,8 @@ const invertir = {
 
         await db.execute('INSERT INTO inversiones (jid, cantidad, estado) VALUES (?, ?, ?)',
             [userJid, cantidad, ganancia > 0 ? 'completada' : ganancia < 0 ? 'perdida' : 'completada'])
+
+        await registrarCooldown(userJid, 'invertir', 20)
 
         await sock.sendMessage(jid, {
             text: `📊 *INVERSIÓN*\n\n${texto}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia} monedas`

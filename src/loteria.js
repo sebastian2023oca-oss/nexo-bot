@@ -1,4 +1,5 @@
 import db from './db.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const PRECIO_BOLETO = 100
 const PREMIO_MAYOR = 5000
@@ -8,8 +9,13 @@ const loteria = {
         const jid = mensaje.key.remoteJid
         const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
+        const enCooldown = await verificarCooldown(userJid, 'loteria', 15)
+        if (enCooldown) {
+            await sock.sendMessage(jid, { text: `⏳ Debes esperar *${enCooldown} minutos* para jugar de nuevo.` }, { quoted: mensaje })
+            return
+        }
 
+        const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
         if (rows.length === 0) {
             await sock.sendMessage(jid, { text: `❌ No estás registrado en el bot.` }, { quoted: mensaje })
             return
@@ -24,7 +30,6 @@ const loteria = {
 
         await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [PRECIO_BOLETO, userJid])
 
-        // Verificar poción de suerte
         const [pocion] = await db.execute(
             'SELECT * FROM items_activos WHERE jid = ? AND item = "pocion" AND expira > NOW()',
             [userJid]
@@ -52,6 +57,7 @@ const loteria = {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [premio, userJid])
         }
 
+        await registrarCooldown(userJid, 'loteria', 15)
         const pocionTexto = tienePocion ? '\n🧪 *Poción de suerte activa*' : ''
 
         await sock.sendMessage(jid, {

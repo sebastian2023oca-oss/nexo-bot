@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown } from './utils.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 function carta() {
     const cartas = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
@@ -77,14 +77,13 @@ const blackjack = {
             ganancia = -cantidad
         }
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
         if (ganancia !== 0) {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [ganancia, userJid])
         }
         await registrarCooldown(userJid, 'blackjack', 15)
 
         await sock.sendMessage(jid, {
-            text: `🃏 *BLACKJACK*\n\n🧑 *Tu mano:* ${manoJugador.join(' ')} = *${puntajeJ}*\n🤖 *Dealer:* ${manoDealer.join(' ')} = *${puntajeD}*\n\n${resultado}\n${ganancia !== 0 ? `💰 *${ganancia > 0 ? 'Ganaste' : 'Perdiste'}:* ${Math.abs(ganancia)} monedas` : ''}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `🃏 *BLACKJACK*\n\n🧑 *Tu mano:* ${manoJugador.join(' ')} = *${puntajeJ}*\n🤖 *Dealer:* ${manoDealer.join(' ')} = *${puntajeD}*\n\n${resultado}\n${ganancia !== 0 ? `💰 *${ganancia > 0 ? 'Ganaste' : 'Perdiste'}:* ${Math.abs(ganancia)} monedas` : ''}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia} monedas`
         }, { quoted: mensaje })
     }
 }

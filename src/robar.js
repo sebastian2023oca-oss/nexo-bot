@@ -1,9 +1,16 @@
 import db from './db.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const robar = {
     async ejecutar(sock, mensaje) {
         const jid = mensaje.key.remoteJid
         const userJid = mensaje.key.participant || mensaje.key.remoteJid
+
+        const enCooldown = await verificarCooldown(userJid, 'robar', 15)
+        if (enCooldown) {
+            await sock.sendMessage(jid, { text: `⏳ Debes esperar *${enCooldown} minutos* para intentar robar de nuevo.` }, { quoted: mensaje })
+            return
+        }
 
         const mencionado = mensaje.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
 
@@ -37,13 +44,13 @@ const robar = {
             return
         }
 
-        // Verificar escudo de la víctima
         const [escudo] = await db.execute(
             'SELECT * FROM items_activos WHERE jid = ? AND item = "escudo" AND expira > NOW()',
             [mencionado]
         )
 
         if (escudo.length > 0) {
+            await registrarCooldown(userJid, 'robar', 15)
             await sock.sendMessage(jid, {
                 text: `🛡️ *¡ROBO BLOQUEADO!*\n\n@${mencionado.split('@')[0]} tiene un escudo anti-robo activo.\n\n❌ No pudiste robarle nada.`,
                 mentions: [mencionado]
@@ -51,8 +58,9 @@ const robar = {
             return
         }
 
-        // 40% éxito, 60% fallo
         const exito = Math.random() < 0.4
+
+        await registrarCooldown(userJid, 'robar', 15)
 
         if (exito) {
             const robado = Math.floor((victima[0].monedas || 0) * (Math.random() * 0.3 + 0.1))

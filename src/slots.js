@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown } from './utils.js'
+import { verificarCooldown, registrarCooldown } from './utils.js'
 
 const COSTO = 50
 
@@ -44,12 +44,11 @@ const slots = {
             resultado = '❌ *Sin suerte*'
         }
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
         await db.execute('UPDATE usuarios SET monedas = monedas - ? + ? WHERE jid = ?', [COSTO, premio, userJid])
         await registrarCooldown(userJid, 'slots', 15)
 
         await sock.sendMessage(jid, {
-            text: `🎰 *TRAGAMONEDAS*\n\n┌─────────────────┐\n│  ${r1}  │  ${r2}  │  ${r3}  │\n└─────────────────┘\n\n${resultado}\n${premio > 0 ? `💰 *Premio:* +${premio} monedas` : ''}\n💸 *Costo:* -${COSTO} monedas\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - COSTO + premio - impuesto} monedas`
+            text: `🎰 *TRAGAMONEDAS*\n\n┌─────────────────┐\n│  ${r1}  │  ${r2}  │  ${r3}  │\n└─────────────────┘\n\n${resultado}\n${premio > 0 ? `💰 *Premio:* +${premio} monedas` : ''}\n💸 *Costo:* -${COSTO} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - COSTO + premio} monedas`
         }, { quoted: mensaje })
     }
 }
