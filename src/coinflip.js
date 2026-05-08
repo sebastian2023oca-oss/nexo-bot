@@ -45,7 +45,7 @@ const coinflip = {
         await registrarCooldown(userJid, 'coinflip', 15)
 
         await sock.sendMessage(jid, {
-            text: `🪙 *COIN FLIP*\n\n${resultado ? `🟡 *¡CARA!* Ganaste *${cantidad} monedas*!` : `⚫ *¡SELLO!* Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + (resultado ? cantidad : -cantidad) - impuesto} monedas`
+            text: `🪙 *COIN FLIP*\n\n${resultado ? `🟡 *¡CARA!* Ganaste *${cantidad} monedas*!` : `⚫ *¡SELLO!* Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + (resultado ? cantidad : -cantidad) - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

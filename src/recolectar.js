@@ -35,7 +35,7 @@ const recolectar = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${objeto.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + objeto.valor - impuesto} monedas`
+            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${objeto.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + objeto.valor - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

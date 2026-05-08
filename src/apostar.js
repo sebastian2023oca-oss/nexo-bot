@@ -47,7 +47,7 @@ const apostar = {
         await registrarCooldown(userJid, 'apostar', 15)
 
         await sock.sendMessage(jid, {
-            text: `🎯 *APUESTA DE ALTO RIESGO*\n\n${gano ? `✅ ¡Ganaste! Multiplicador: *x${multiplicador}*\n💰 *Ganancia:* +${ganancia} monedas` : `❌ Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `🎯 *APUESTA DE ALTO RIESGO*\n\n${gano ? `✅ ¡Ganaste! Multiplicador: *x${multiplicador}*\n💰 *Ganancia:* +${ganancia} monedas` : `❌ Perdiste *${cantidad} monedas*.`}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

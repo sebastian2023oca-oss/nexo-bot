@@ -37,7 +37,7 @@ const cazar = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `🏹 *CAZA*\n\n${animal.valor > 0 ? `Cazaste un *${animal.nombre}* y lo vendiste por *${animal.valor} monedas*.` : `*${animal.nombre}*... Más suerte la próxima vez.`}\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + animal.valor - impuesto} monedas`
+            text: `🏹 *CAZA*\n\n${animal.valor > 0 ? `Cazaste un *${animal.nombre}* y lo vendiste por *${animal.valor} monedas*.` : `*${animal.nombre}*... Más suerte la próxima vez.`}\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + animal.valor - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

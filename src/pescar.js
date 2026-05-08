@@ -35,7 +35,7 @@ const pescar = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `🎣 *PESCA*\n\nPescaste un *${pez.nombre}* y lo vendiste por *${pez.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + pez.valor - impuesto} monedas`
+            text: `🎣 *PESCA*\n\nPescaste un *${pez.nombre}* y lo vendiste por *${pez.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + pez.valor - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

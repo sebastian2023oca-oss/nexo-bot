@@ -49,7 +49,7 @@ const slots = {
         await registrarCooldown(userJid, 'slots', 15)
 
         await sock.sendMessage(jid, {
-            text: `🎰 *TRAGAMONEDAS*\n\n┌─────────────────┐\n│  ${r1}  │  ${r2}  │  ${r3}  │\n└─────────────────┘\n\n${resultado}\n${premio > 0 ? `💰 *Premio:* +${premio} monedas` : ''}\n💸 *Costo:* -${COSTO} monedas\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - COSTO + premio - impuesto} monedas`
+            text: `🎰 *TRAGAMONEDAS*\n\n┌─────────────────┐\n│  ${r1}  │  ${r2}  │  ${r3}  │\n└─────────────────┘\n\n${resultado}\n${premio > 0 ? `💰 *Premio:* +${premio} monedas` : ''}\n💸 *Costo:* -${COSTO} monedas\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - COSTO + premio - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

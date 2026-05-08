@@ -35,7 +35,7 @@ const negocio = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `🏢 *NEGOCIO*\n\nTu *${neg.nombre}* generó *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `🏢 *NEGOCIO*\n\nTu *${neg.nombre}* generó *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

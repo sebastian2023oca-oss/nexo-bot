@@ -84,7 +84,7 @@ const blackjack = {
         await registrarCooldown(userJid, 'blackjack', 15)
 
         await sock.sendMessage(jid, {
-            text: `🃏 *BLACKJACK*\n\n🧑 *Tu mano:* ${manoJugador.join(' ')} = *${puntajeJ}*\n🤖 *Dealer:* ${manoDealer.join(' ')} = *${puntajeD}*\n\n${resultado}\n${ganancia !== 0 ? `💰 *${ganancia > 0 ? 'Ganaste' : 'Perdiste'}:* ${Math.abs(ganancia)} monedas` : ''}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `🃏 *BLACKJACK*\n\n🧑 *Tu mano:* ${manoJugador.join(' ')} = *${puntajeJ}*\n🤖 *Dealer:* ${manoDealer.join(' ')} = *${puntajeD}*\n\n${resultado}\n${ganancia !== 0 ? `💰 *${ganancia > 0 ? 'Ganaste' : 'Perdiste'}:* ${Math.abs(ganancia)} monedas` : ''}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

@@ -73,7 +73,7 @@ const pagar = {
         const nombreGrupo = jid.endsWith('@g.us') ? jid : 'Chat privado'
 
         await sock.sendMessage(jid, {
-            text: `✅ *PAGO REALIZADO*\n\n👤 *Receptor:* @${mencionado.split('@')[0]}\n💸 *Enviado:* ${cantidad.toLocaleString()} monedas\n🧾 *IVA (5%):* -${iva.toLocaleString()} monedas\n✅ *Recibido:* ${recibido.toLocaleString()} monedas\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Tu balance:* ${(sender[0].monedas || 0) - cantidad - impuesto} monedas`,
+            text: `✅ *PAGO REALIZADO*\n\n👤 *Receptor:* @${mencionado.split('@')[0]}\n💸 *Enviado:* ${cantidad.toLocaleString()} monedas\n🧾 *IVA (5%):* -${iva.toLocaleString()} monedas\n✅ *Recibido:* ${recibido.toLocaleString()} monedas\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Tu balance:* ${(sender[0].monedas || 0) - cantidad - impuesto} monedas`,
             mentions: [mencionado]
         }, { quoted: mensaje })
 

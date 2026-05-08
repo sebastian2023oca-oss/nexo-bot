@@ -37,7 +37,7 @@ const daily = {
         await darXP(userJid, 20)
 
         await sock.sendMessage(jid, {
-            text: `🎁 *RECOMPENSA DIARIA*\n\n✅ Recibiste *${RECOMPENSA_DAILY} monedas*.\n✨ *XP ganado:* +20\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + RECOMPENSA_DAILY - impuesto} monedas\n\n⌛ Vuelve mañana para reclamar de nuevo.`
+            text: `🎁 *RECOMPENSA DIARIA*\n\n✅ Recibiste *${RECOMPENSA_DAILY} monedas*.\n✨ *XP ganado:* +20\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + RECOMPENSA_DAILY - impuesto} monedas\n\n⌛ Vuelve mañana para reclamar de nuevo.`
         }, { quoted: mensaje })
     }
 }

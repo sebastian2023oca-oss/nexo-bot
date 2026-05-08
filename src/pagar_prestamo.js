@@ -46,7 +46,7 @@ const pagar_prestamo = {
         if (deudaRestante <= 0) {
             await db.execute('UPDATE prestamos SET estado = "pagado" WHERE jid = ? AND estado = "activo"', [userJid])
             await sock.sendMessage(jid, {
-                text: `✅ *PRÉSTAMO PAGADO*\n\n🎉 Pagaste tu deuda completamente.\n💸 *Pagado:* ${cantidad} monedas\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad - impuesto} monedas`
+                text: `✅ *PRÉSTAMO PAGADO*\n\n🎉 Pagaste tu deuda completamente.\n💸 *Pagado:* ${cantidad} monedas\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad - impuesto} monedas`
             }, { quoted: mensaje })
         } else {
             await db.execute('UPDATE prestamos SET deuda = ? WHERE jid = ? AND estado = "activo"', [deudaRestante, userJid])

@@ -29,7 +29,7 @@ const minar = {
         await darXP(userJid, xpGanado)
 
         await sock.sendMessage(jid, {
-            text: `⛏️ *MINERÍA*\n\nMinaste *${recurso}* y obtuviste *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+            text: `⛏️ *MINERÍA*\n\nMinaste *${recurso}* y obtuviste *${ganancia} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
         }, { quoted: mensaje })
     }
 }

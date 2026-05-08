@@ -30,7 +30,7 @@ const beg = {
 
         await sock.sendMessage(jid, {
             text: exito
-                ? `🙏 *MENDICIDAD*\n\nAlguien tuvo compasión y te dio *${ganancia} monedas*.\n✨ *XP ganado:* +1\n💸 *Impuesto (0.5%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
+                ? `🙏 *MENDICIDAD*\n\nAlguien tuvo compasión y te dio *${ganancia} monedas*.\n✨ *XP ganado:* +1\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + ganancia - impuesto} monedas`
                 : `🙏 *MENDICIDAD*\n\nNadie te hizo caso esta vez... 😔\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - impuesto} monedas`
         }, { quoted: mensaje })
     }
