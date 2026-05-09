@@ -44,7 +44,7 @@ const rank = {
 ║        ${medalla}  R A N K I N G  ${medalla}        ║
 ╚════════════════════════════════╝
 
-👤 *${u.nombre_perfil || u.nombre || 'Usuario'}*
+👤 @${userJid.split('@')[0]}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -61,7 +61,8 @@ const rank = {
 
 💡 Usa *.top* para ver el ranking global.
 
-╚══════════════════════════════╝`
+╚══════════════════════════════╝`,
+            mentions: [userJid]
         }, { quoted: mensaje })
     }
 }

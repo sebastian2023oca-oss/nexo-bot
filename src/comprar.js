@@ -4,7 +4,7 @@ const ITEMS = {
     doble_xp:           { nombre: 'Doble XP', precio: 1000, duracion: 3600000 },
     doble_work:         { nombre: 'Doble Work', precio: 800, duracion: 3600000 },
     caja:               { nombre: 'Caja Misteriosa', precio: 300, duracion: null },
-    escudo:             { nombre: 'Escudo Anti-Robo', precio: 500, duracion: null },
+    escudo:             { nombre: 'Escudo Anti-Robo', precio: 5000, duracion: null },
     pocion:             { nombre: 'Poción de Suerte', precio: 600, duracion: 18000000 },
     ampliar_prestamo:   { nombre: 'Ampliar Préstamo', precio: 1500, duracion: null },
     reducir_interes:    { nombre: 'Reducir Interés', precio: 1000, duracion: null },
@@ -75,7 +75,6 @@ const comprar = {
                 return
             }
             case 'escudo': {
-                // Duración aleatoria entre 1 y 5 horas
                 const horas = Math.floor(Math.random() * 5) + 1
                 const duracion = horas * 3600000
                 const expira = new Date(Date.now() + duracion)
