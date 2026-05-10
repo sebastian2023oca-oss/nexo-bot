@@ -39,6 +39,8 @@ const pagar = {
             return
         }
 
+        const prestamo = prestamosActivos[0]
+
         const [sender] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
         const [receiver] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [mencionado])
 
@@ -52,33 +54,43 @@ const pagar = {
             return
         }
 
-        const iva = Math.floor(cantidad * IVA)
-        const recibido = cantidad - iva
-
         if ((sender[0].monedas || 0) < cantidad) {
             await sock.sendMessage(jid, { text: `❌ No tienes suficiente dinero.\n\n💵 *Tu balance:* ${sender[0].monedas || 0} monedas` }, { quoted: mensaje })
             return
         }
 
-        const impuesto = await cobrarImpuesto(userJid, sender[0].monedas)
-        await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [cantidad, userJid])
+        // Verificar que no pague más de lo que debe
+        const deudaActual = prestamo.cantidad
+        const pagoReal = Math.min(cantidad, deudaActual)
+        const iva = Math.floor(pagoReal * IVA)
+        const recibido = pagoReal - iva
+        const deudaRestante = deudaActual - pagoReal
+
+        await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [pagoReal, userJid])
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [recibido, mencionado])
 
-        // Marcar préstamo como pagado si la cantidad cubre la deuda
-        await db.execute(
-            'UPDATE prestamos_usuarios SET estado = "pagado" WHERE jid_deudor = ? AND jid_prestamista = ? AND estado = "activo" LIMIT 1',
-            [userJid, mencionado]
-        )
+        // Solo marcar como pagado si la deuda queda en 0
+        if (deudaRestante <= 0) {
+            await db.execute(
+                'UPDATE prestamos_usuarios SET estado = "pagado" WHERE id = ?',
+                [prestamo.id]
+            )
+        } else {
+            await db.execute(
+                'UPDATE prestamos_usuarios SET cantidad = ? WHERE id = ?',
+                [deudaRestante, prestamo.id]
+            )
+        }
 
         const nombreGrupo = jid.endsWith('@g.us') ? jid : 'Chat privado'
 
         await sock.sendMessage(jid, {
-            text: `✅ *PAGO REALIZADO*\n\n👤 *Receptor:* @${mencionado.split('@')[0]}\n💸 *Enviado:* ${cantidad.toLocaleString()} monedas\n🧾 *IVA (5%):* -${iva.toLocaleString()} monedas\n✅ *Recibido:* ${recibido.toLocaleString()} monedas\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Tu balance:* ${(sender[0].monedas || 0) - cantidad - impuesto} monedas`,
+            text: `✅ *PAGO REALIZADO*\n\n👤 *Receptor:* @${mencionado.split('@')[0]}\n💸 *Pagado:* ${pagoReal.toLocaleString()} monedas\n🧾 *IVA (5%):* -${iva.toLocaleString()} monedas\n✅ *Recibido:* ${recibido.toLocaleString()} monedas\n${deudaRestante > 0 ? `⚠️ *Deuda restante:* ${deudaRestante} monedas` : '🎉 *¡Deuda completamente pagada!*'}\n\n💵 *Tu balance:* ${(sender[0].monedas || 0) - pagoReal} monedas`,
             mentions: [mencionado]
         }, { quoted: mensaje })
 
         await sock.sendMessage(OWNERS_JID, {
-            text: `💸 *PAGO DETECTADO*\n\n👤 *Emisor:* @${userJid.split('@')[0]} (${nombreSender})\n👥 *Receptor:* @${mencionado.split('@')[0]}\n💰 *Enviado:* ${cantidad.toLocaleString()} monedas\n🧾 *IVA:* ${iva.toLocaleString()} monedas\n📍 *Grupo:* ${nombreGrupo}`,
+            text: `💸 *PAGO DETECTADO*\n\n👤 *Emisor:* @${userJid.split('@')[0]} (${nombreSender})\n👥 *Receptor:* @${mencionado.split('@')[0]}\n💰 *Pagado:* ${pagoReal.toLocaleString()} monedas\n🧾 *IVA:* ${iva.toLocaleString()} monedas\n⚠️ *Deuda restante:* ${deudaRestante} monedas\n📍 *Grupo:* ${nombreGrupo}`,
             mentions: [userJid, mencionado]
         })
     }
