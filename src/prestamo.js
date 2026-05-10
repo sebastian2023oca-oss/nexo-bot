@@ -4,7 +4,7 @@ import { cobrarImpuesto } from './utils.js'
 const INTERES_SISTEMA = 0.2
 const MAX_PRESTAMO_SISTEMA = 5000
 const MAX_PRESTAMOS_ACTIVOS = 3
-const COOLDOWN_HORAS = 48
+const COOLDOWN_HORAS = 24
 
 const prestamo = {
     async ejecutar(sock, mensaje, args) {
