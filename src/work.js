@@ -49,7 +49,7 @@ const work = {
         const xpFinal = dobleXp.length > 0 ? xpGanado * 2 : xpGanado
 
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [ganancia, userJid])
-        await registrarCooldown(userJid, 'work', 60)
+        await registrarCooldown(userJid, 'work', 15)
         await darXP(userJid, xpFinal)
 
         const dobleTexto = tieneDoble ? '\n⚡ *Doble ganancia activa!*' : ''
