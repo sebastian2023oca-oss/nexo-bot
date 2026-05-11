@@ -6,7 +6,7 @@ const inventario = {
         const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
         const [rows] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? ORDER BY categoria, item',
+            'SELECT * FROM inventario_usuario WHERE jid = ? ORDER BY item',
             [userJid]
         )
 
