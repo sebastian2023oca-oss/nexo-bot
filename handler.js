@@ -64,6 +64,23 @@ import comprar from './src/comprar.js'
 import topbank from './src/topbank.js'
 import topmoney from './src/topmoney.js'
 
+// Tienda & Inventario
+import tienda from './src/tienda.js'
+import precio from './src/precio.js'
+import stock from './src/stock.js'
+import inventario from './src/inventario.js'
+import listar from './src/listar.js'
+import usar from './src/usar.js'
+import equipar from './src/equipar.js'
+import desequipar from './src/desequipar.js'
+import vender from './src/vender.js'
+import regalar from './src/regalar.js'
+import mejorar from './src/mejorar.js'
+import bodega from './src/bodega.js'
+import almacenar from './src/almacenar.js'
+import sacar from './src/sacar.js'
+import historico from './src/historico.js'
+
 import db from './src/db.js'
 
 const PREFIJO = '.'
@@ -81,6 +98,8 @@ const comandos = {
     aceptarprestamo, rechazarprestamo, deuda, apostar,
     loteria, ruleta, robar, coinflip, slots, blackjack,
     shopcoins, comprar, topbank, topmoney,
+    tienda, precio, stock, inventario, listar, usar, equipar, desequipar,
+    vender, regalar, mejorar, bodega, almacenar, sacar, historico,
 }
 
 const permitidosEnPrivado = ['addbot']
@@ -96,7 +115,6 @@ function obtenerTexto(mensaje) {
     ).trim()
 }
 
-// Cobra impuesto silencioso del 0.5% en cada uso de comando
 async function cobrarImpuestoSilencioso(userJid) {
     try {
         const [rows] = await db.execute('SELECT monedas FROM usuarios WHERE jid = ?', [userJid])
@@ -133,7 +151,6 @@ async function manejarMensaje(sock, mensaje) {
     const comando = comandos[cmd]
     if (!comando) return
 
-    // Cobrar impuesto silencioso antes de ejecutar cualquier comando
     const userJid = mensaje.key.participant || mensaje.key.remoteJid
     await cobrarImpuestoSilencioso(userJid)
 

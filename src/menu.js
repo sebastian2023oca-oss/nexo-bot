@@ -3,6 +3,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import menu1 from './menu1.js'
 import menu2 from './menu2.js'
+import menu3 from './menu3.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
@@ -10,6 +11,7 @@ const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
 const submenus = {
     1: menu1,
     2: menu2,
+    3: menu3,
 }
 
 const menuTexto = `╔════════════════════════════════╗
@@ -18,7 +20,7 @@ const menuTexto = `╔═══════════════════�
 ╚════════════════════════════════╝
 
 ▸ 24 páginas  ·  140+ comandos
-▸ Prefijo: .  ·  Versión: 1.30.0
+▸ Prefijo: .  ·  Versión: 1.40.0
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -56,6 +58,7 @@ const menuTexto = `╔═══════════════════�
   ✦ .menu <n>    → ir a una página
   ✦ .menu 1      → ver Perfil
   ✦ .menu 2      → ver Economía
+  ✦ .menu 3      → ver Tienda & Inventario
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
