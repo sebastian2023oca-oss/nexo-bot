@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
 
 const cazar = {
     async ejecutar(sock, mensaje) {
@@ -27,17 +27,27 @@ const cazar = {
             { nombre: '💨 Nada, escapó', valor: 0 },
         ]
         const animal = animales[Math.floor(Math.random() * animales.length)]
-        const xpGanado = animal.valor > 0 ? Math.floor(Math.random() * 8) + 3 : 1
+        let valor = animal.valor
+        const xpGanado = valor > 0 ? Math.floor(Math.random() * 8) + 3 : 1
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
-        if (animal.valor > 0) {
-            await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [animal.valor, userJid])
+        // Verificar trampa_caza equipada → +40% captura
+        const [trampa] = await db.execute(
+            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "trampa_caza" AND equipado = 1',
+            [userJid]
+        )
+        const tieneTrampa = trampa.length > 0
+        if (tieneTrampa && valor > 0) valor = Math.floor(valor * 1.4)
+
+        if (valor > 0) {
+            await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
         }
         await registrarCooldown(userJid, 'cazar', 15)
         await darXP(userJid, xpGanado)
 
+        const trampaTexto = tieneTrampa && valor > 0 ? '\n🪤 *Trampa de Caza activa!* (+40% valor)' : ''
+
         await sock.sendMessage(jid, {
-            text: `🏹 *CAZA*\n\n${animal.valor > 0 ? `Cazaste un *${animal.nombre}* y lo vendiste por *${animal.valor} monedas*.` : `*${animal.nombre}*... Más suerte la próxima vez.`}\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + animal.valor - impuesto} monedas`
+            text: `🏹 *CAZA*\n\n${valor > 0 ? `Cazaste *${animal.nombre}* y lo vendiste por *${valor} monedas*.` : `*${animal.nombre}*... Más suerte la próxima vez.`}${trampaTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
         }, { quoted: mensaje })
     }
 }

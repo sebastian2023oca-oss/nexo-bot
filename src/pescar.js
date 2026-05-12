@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
 
 const pescar = {
     async ejecutar(sock, mensaje) {
@@ -27,15 +27,25 @@ const pescar = {
             { nombre: '💎 Pez dorado', valor: 500 },
         ]
         const pez = peces[Math.floor(Math.random() * peces.length)]
+        let valor = pez.valor
         const xpGanado = Math.floor(Math.random() * 6) + 2
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
-        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [pez.valor, userJid])
+        // Verificar caña_premium equipada → mejor resultado
+        const [caña] = await db.execute(
+            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "caña_premium" AND equipado = 1',
+            [userJid]
+        )
+        const tieneCaña = caña.length > 0
+        if (tieneCaña) valor = Math.floor(valor * 1.5)
+
+        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
         await registrarCooldown(userJid, 'pescar', 15)
         await darXP(userJid, xpGanado)
 
+        const cañaTexto = tieneCaña ? '\n🎣 *Caña Premium activa!* (+50% valor)' : ''
+
         await sock.sendMessage(jid, {
-            text: `🎣 *PESCA*\n\nPescaste un *${pez.nombre}* y lo vendiste por *${pez.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + pez.valor - impuesto} monedas`
+            text: `🎣 *PESCA*\n\nPescaste *${pez.nombre}* y lo vendiste por *${valor} monedas*.${cañaTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
         }, { quoted: mensaje })
     }
 }

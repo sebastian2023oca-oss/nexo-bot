@@ -35,6 +35,8 @@ const menu2 = {
   ✦ *.negocio* → negocio virtual
   ✦ *.repartir* → entregas rápidas
   ✦ *.beg* → pedir monedas al sistema
+  ✦ *.expedicion* → explorar lugares (2h cooldown)
+  ✦ *.aventura* → aventuras de combate (3h cooldown)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -61,7 +63,8 @@ const menu2 = {
 
   ✦ *.loteria* → sorteo aleatorio
   ✦ *.ruleta* → juego de azar
-  ✦ *.robar @usuario* → intentar robar
+  ✦ *.robar @usuario* → intentar robar monedas
+  ✦ *.robar_item @usuario* → intentar robar ítem
   ✦ *.coinflip <cantidad>* → cara o sello
   ✦ *.slots* → tragamonedas
   ✦ *.blackjack* → blackjack contra el sistema

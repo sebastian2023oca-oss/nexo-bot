@@ -22,22 +22,28 @@ const almacenar = {
             return
         }
 
-        const [user] = await db.execute('SELECT bodega_max FROM usuarios WHERE jid = ?', [userJid])
-        const bodegaMax = user[0]?.bodega_max || 100
-
-        const [bodegaCount] = await db.execute(
-            'SELECT SUM(cantidad) as total FROM bodega WHERE jid = ?',
-            [userJid]
-        )
-
-        if ((bodegaCount[0].total || 0) >= bodegaMax) {
+        // No se puede almacenar si está equipado
+        if (invRows[0].equipado) {
             await sock.sendMessage(jid, {
-                text: `❌ Tu bodega está llena (*${bodegaMax}/${bodegaMax}*).\n\n💡 Compra una mejora de bodega en *.shopcoins*`
+                text: `❌ No puedes almacenar *${itemKey}* porque está equipado.\n\n💡 Usa *.desequipar ${itemKey}* primero.`
             }, { quoted: mensaje })
             return
         }
 
-        // Mover al inventario a bodega
+        const [user] = await db.execute('SELECT bodega_max FROM usuarios WHERE jid = ?', [userJid])
+        const bodegaMax = user[0]?.bodega_max || 100
+
+        const [bodegaCount] = await db.execute(
+            'SELECT SUM(cantidad) as total FROM bodega WHERE jid = ?', [userJid]
+        )
+
+        if ((bodegaCount[0].total || 0) >= bodegaMax) {
+            await sock.sendMessage(jid, {
+                text: `❌ Tu bodega está llena (*${bodegaMax}/${bodegaMax}*).\n\n💡 Compra mejora de bodega en *.shopcoins*`
+            }, { quoted: mensaje })
+            return
+        }
+
         if (invRows[0].cantidad <= 1) {
             await db.execute('DELETE FROM inventario_usuario WHERE jid = ? AND item = ?', [userJid, itemKey])
         } else {

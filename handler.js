@@ -56,6 +56,7 @@ import apostar from './src/apostar.js'
 import loteria from './src/loteria.js'
 import ruleta from './src/ruleta.js'
 import robar from './src/robar.js'
+import robar_item from './src/robar_item.js'
 import coinflip from './src/coinflip.js'
 import slots from './src/slots.js'
 import blackjack from './src/blackjack.js'
@@ -63,6 +64,8 @@ import shopcoins from './src/shopcoins.js'
 import comprar from './src/comprar.js'
 import topbank from './src/topbank.js'
 import topmoney from './src/topmoney.js'
+import expedicion from './src/expedicion.js'
+import aventura from './src/aventura.js'
 
 // Tienda & Inventario
 import tienda from './src/tienda.js'
@@ -96,8 +99,11 @@ const comandos = {
     invertir, rentabilidad, prestamo,
     'pagar_prestamo': pagar_prestamo,
     aceptarprestamo, rechazarprestamo, deuda, apostar,
-    loteria, ruleta, robar, coinflip, slots, blackjack,
+    loteria, ruleta, robar,
+    'robar_item': robar_item,
+    coinflip, slots, blackjack,
     shopcoins, comprar, topbank, topmoney,
+    expedicion, aventura,
     tienda, precio, stock, inventario, listar, usar, equipar, desequipar,
     vender, regalar, mejorar, bodega, almacenar, sacar, historico,
 }

@@ -1,5 +1,7 @@
 import db from './db.js'
 
+const MAX_EQUIPADOS = 5
+
 const equipar = {
     async ejecutar(sock, mensaje, args) {
         const jid = mensaje.key.remoteJid
@@ -27,10 +29,22 @@ const equipar = {
             return
         }
 
+        // Verificar límite de 5 equipados
+        const [equipados] = await db.execute(
+            'SELECT COUNT(*) as total FROM inventario_usuario WHERE jid = ? AND equipado = 1',
+            [userJid]
+        )
+        if ((equipados[0].total || 0) >= MAX_EQUIPADOS) {
+            await sock.sendMessage(jid, {
+                text: `❌ Ya tienes *${MAX_EQUIPADOS} ítems equipados* (máximo permitido).\n\n💡 Usa *.desequipar <item>* para liberar un espacio.`
+            }, { quoted: mensaje })
+            return
+        }
+
         await db.execute('UPDATE inventario_usuario SET equipado = 1 WHERE jid = ? AND item = ?', [userJid, itemKey])
 
         await sock.sendMessage(jid, {
-            text: `⚡ *ÍTEM EQUIPADO*\n\n✅ Equipaste *${itemKey}* correctamente.\n\nSus beneficios están activos.`
+            text: `⚡ *ÍTEM EQUIPADO*\n\n✅ Equipaste *${itemKey}* correctamente.\n\nSus beneficios están activos.\n\n📊 *Equipados:* ${(equipados[0].total || 0) + 1}/${MAX_EQUIPADOS}`
         }, { quoted: mensaje })
     }
 }
