@@ -17,9 +17,7 @@ const perfil = {
         const [totalRows] = await db.execute('SELECT COUNT(*) as total FROM usuarios')
 
         if (rows.length === 0) {
-            await sock.sendMessage(jid, {
-                text: `❌ Este usuario no está registrado en el bot.`
-            }, { quoted: mensaje })
+            await sock.sendMessage(jid, { text: `❌ Este usuario no está registrado en el bot.` }, { quoted: mensaje })
             return
         }
 
@@ -36,10 +34,17 @@ const perfil = {
         const userId = String(u.id).padStart(3, '0')
         const total = String(totalRows[0].total).padStart(3, '0')
 
-        // Marco especial o normal
         const tienMarco = u.marco === 1
         const topBorder = tienMarco ? `╔══⭐ PERFIL ESPECIAL ⭐══╗` : `╔══════════════════════════╗`
         const botBorder = tienMarco ? `╚══⭐════════════════⭐══╝` : `╚══════════════════════════╝`
+
+        // Ítems equipados
+        const [equipados] = await db.execute(
+            'SELECT item FROM inventario_usuario WHERE jid = ? AND equipado = 1', [targetJid]
+        )
+        const equipadosTexto = equipados.length > 0
+            ? equipados.map(e => `⚡ ${e.item}`).join('\n')
+            : 'Ninguno'
 
         await sock.sendMessage(jid, {
             text: `${topBorder}
@@ -69,8 +74,12 @@ ${botBorder}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-👑 *VIP:* ${u.vip ? '✅ Activo' : '❌ Inactivo'}
-🏢 *Negocio:* ${u.negocio ? '✅ Activo' : '❌ Inactivo'}
+⚔️ *ÍTEMS EQUIPADOS*
+
+${equipadosTexto}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⭐ *Reputación:* ${u.reputacion || 0}
 
 ${botBorder}`

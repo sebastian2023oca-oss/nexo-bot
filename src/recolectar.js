@@ -1,5 +1,5 @@
 import db from './db.js'
-import { cobrarImpuesto, verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
 
 const recolectar = {
     async ejecutar(sock, mensaje) {
@@ -27,15 +27,24 @@ const recolectar = {
             { nombre: '📦 Caja abandonada', valor: 150 },
         ]
         const objeto = objetos[Math.floor(Math.random() * objetos.length)]
+        let valor = objeto.valor
         const xpGanado = Math.floor(Math.random() * 6) + 2
 
-        const impuesto = await cobrarImpuesto(userJid, rows[0].monedas)
-        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [objeto.valor, userJid])
+        // Verificar amuleto_suerte equipado → +30%
+        const [amuleto] = await db.execute(
+            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "amuleto_suerte" AND equipado = 1', [userJid]
+        )
+        const tieneAmuleto = amuleto.length > 0
+        if (tieneAmuleto) valor = Math.floor(valor * 1.3)
+
+        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
         await registrarCooldown(userJid, 'recolectar', 15)
         await darXP(userJid, xpGanado)
 
+        const amuletoTexto = tieneAmuleto ? '\n🍀 *Amuleto de Suerte activo!* (+30% valor)' : ''
+
         await sock.sendMessage(jid, {
-            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${objeto.valor} monedas*.\n✨ *XP ganado:* +${xpGanado}\n💸 *Impuesto (0.1%):* -${impuesto} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + objeto.valor - impuesto} monedas`
+            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${valor} monedas*.${amuletoTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
         }, { quoted: mensaje })
     }
 }

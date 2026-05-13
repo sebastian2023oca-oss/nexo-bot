@@ -13,10 +13,7 @@ const usar = {
 
         const itemKey = args[0].toLowerCase()
 
-        const [rows] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = ?',
-            [userJid, itemKey]
-        )
+        const [rows] = await db.execute('SELECT * FROM inventario_usuario WHERE jid = ? AND item = ?', [userJid, itemKey])
 
         if (rows.length === 0 || rows[0].cantidad <= 0) {
             await sock.sendMessage(jid, { text: `❌ No tienes *${itemKey}* en tu inventario.` }, { quoted: mensaje })
@@ -48,13 +45,18 @@ const usar = {
                 respuesta = `🎁 *Caja Premium abierta!*\n\n¡Encontraste *${premio} monedas*!`
                 break
             }
+            case 'ticket_vip_dia': {
+                // Sin VIP en el RPG — se convierte en monedas
+                await db.execute('UPDATE usuarios SET monedas = monedas + 5000 WHERE jid = ?', [userJid])
+                respuesta = `🎫 *Ticket especial canjeado!*\n\nRecibiste *+5000 monedas* a cambio.`
+                break
+            }
             default: {
                 await sock.sendMessage(jid, { text: `❌ Este ítem no se puede usar directamente.\n\n💡 Prueba *.equipar ${itemKey}*` }, { quoted: mensaje })
                 return
             }
         }
 
-        // Reducir cantidad
         if (rows[0].cantidad <= 1) {
             await db.execute('DELETE FROM inventario_usuario WHERE jid = ? AND item = ?', [userJid, itemKey])
         } else {

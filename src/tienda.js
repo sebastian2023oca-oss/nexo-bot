@@ -1,31 +1,23 @@
 import db from './db.js'
 
-// Actualizar precios cada 2 días (±20%)
 async function actualizarPrecios() {
     const [items] = await db.execute('SELECT * FROM tienda')
     for (const item of items) {
         const diff = Date.now() - new Date(item.ultimo_precio_cambio).getTime()
-        if (diff >= 172800000) { // 2 días
-            const variacion = (Math.random() * 0.4) - 0.2 // -20% a +20%
+        if (diff >= 172800000) {
+            const variacion = (Math.random() * 0.4) - 0.2
             const nuevoPrecio = Math.max(100, Math.floor(item.precio * (1 + variacion)))
-            await db.execute(
-                'UPDATE tienda SET precio = ?, ultimo_precio_cambio = NOW() WHERE id = ?',
-                [nuevoPrecio, item.id]
-            )
+            await db.execute('UPDATE tienda SET precio = ?, ultimo_precio_cambio = NOW() WHERE id = ?', [nuevoPrecio, item.id])
         }
     }
 }
 
-// Restablecer stock cada 3 horas
 async function restablecerStock() {
     const [items] = await db.execute('SELECT * FROM tienda')
     for (const item of items) {
         const diff = Date.now() - new Date(item.ultimo_stock_reset).getTime()
-        if (diff >= 10800000) { // 3 horas
-            await db.execute(
-                'UPDATE tienda SET stock = 10, ultimo_stock_reset = NOW() WHERE id = ?',
-                [item.id]
-            )
+        if (diff >= 10800000) {
+            await db.execute('UPDATE tienda SET stock = 10, ultimo_stock_reset = NOW() WHERE id = ?', [item.id])
         }
     }
 }
@@ -57,9 +49,9 @@ const tienda = {
 
         let texto = `🏪 *TIENDA GENERAL*\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
 
-        for (const [cat, items] of Object.entries(categorias)) {
+        for (const [cat, catItems] of Object.entries(categorias)) {
             texto += `${emojis[cat] || '📦'} *${cat.toUpperCase()}*\n\n`
-            for (const item of items) {
+            for (const item of catItems) {
                 texto += `  ✦ *${item.nombre}* — ${item.precio.toLocaleString()} 💰\n`
                 texto += `     📦 Stock: ${item.stock} | 🔑 \`${item.item}\`\n\n`
             }
