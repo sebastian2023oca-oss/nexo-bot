@@ -38,7 +38,6 @@ const perfil = {
         const topBorder = tienMarco ? `╔══⭐ PERFIL ESPECIAL ⭐══╗` : `╔══════════════════════════╗`
         const botBorder = tienMarco ? `╚══⭐════════════════⭐══╝` : `╚══════════════════════════╝`
 
-        // Ítems equipados
         const [equipados] = await db.execute(
             'SELECT item FROM inventario_usuario WHERE jid = ? AND equipado = 1', [targetJid]
         )
@@ -80,6 +79,8 @@ ${equipadosTexto}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+👑 *VIP:* ${u.vip ? '✅ Activo' : '❌ Inactivo'}
+🏢 *Negocio:* ${u.negocio ? '✅ Activo' : '❌ Inactivo'}
 ⭐ *Reputación:* ${u.reputacion || 0}
 
 ${botBorder}`
