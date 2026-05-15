@@ -85,6 +85,7 @@ import sacar from './src/sacar.js'
 import historico from './src/historico.js'
 
 import db from './src/db.js'
+import { reportarErrorComando } from './src/errorReporter.js'
 
 const PREFIJO = '.'
 
@@ -164,6 +165,16 @@ async function manejarMensaje(sock, mensaje) {
         await comando.ejecutar(sock, mensaje, args)
     } catch (error) {
         console.error(`Error ejecutando el comando "${cmd}":`, error)
+
+        await reportarErrorComando(sock, {
+            comandoTexto: texto,
+            mensaje,
+            error
+        })
+
+        await sock.sendMessage(jid, {
+            text: '❌ Ocurrió un error al ejecutar el comando.\n\nEl equipo de owners ya fue avisado automáticamente.'
+        }, { quoted: mensaje })
     }
 }
 

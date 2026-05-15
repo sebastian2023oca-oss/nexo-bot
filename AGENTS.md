@@ -255,6 +255,22 @@ SQL completo necesario:
 ALTER TABLE ejemplo ADD COLUMN campo INT NOT NULL DEFAULT 0;
 ```
 
+## Manejo seguro de errores en comandos
+
+Cuando un comando falle en producción:
+
+- Nunca responder al usuario con mensajes como “mira PM2”, “revisa logs”, stack traces, rutas internas, tokens, nombres de archivos sensibles ni detalles técnicos.
+- El usuario normal solo debe recibir un mensaje corto indicando que ocurrió un error y que el equipo de owners ya fue avisado.
+- El detalle técnico del error debe enviarse automáticamente al grupo de owners configurado en `src/config.js`.
+- El reporte para owners debe incluir, como mínimo:
+  - comando usado;
+  - JID del usuario;
+  - JID del grupo o indicar chat privado;
+  - error completo o stack trace recortado si es demasiado largo.
+- La lógica debe estar centralizada para evitar copiar el mismo `try/catch` inseguro en todos los comandos.
+- PM2 sigue siendo para revisión interna del dueño en VPS, no para mensajes visibles a usuarios del bot.
+
+
 Comando de verificación:
 
 ```sql

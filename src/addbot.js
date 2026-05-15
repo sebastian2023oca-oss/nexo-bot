@@ -1,6 +1,5 @@
 import db from './db.js'
-
-const OWNERS_JID = '120363425755647814@g.us'
+import { OWNERS_JID } from './config.js'
 
 const addbot = {
     async ejecutar(sock, mensaje, args) {
