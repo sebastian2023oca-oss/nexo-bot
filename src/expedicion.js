@@ -1,5 +1,11 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import {
+    calcularMultiplicadorMejora,
+    formatearLineaBonus,
+    obtenerItemEquipado,
+    obtenerNivelMejora
+} from './mejorasItems.js'
 
 const expediciones = [
     { nombre: '🏔️ Montañas del Norte', descripcion: 'Exploraste las montañas heladas', items: ['fragmento_raro', 'cristal_xp', 'gema_mejora'], monedas: [200, 600], xp: [20, 40] },
@@ -30,14 +36,12 @@ const expedicion = {
         let monedas = Math.floor(Math.random() * (exp.monedas[1] - exp.monedas[0])) + exp.monedas[0]
         const xpGanado = Math.floor(Math.random() * (exp.xp[1] - exp.xp[0])) + exp.xp[0]
 
-        // Amuleto de suerte → +30% monedas y +20% probabilidad de ítem
-        const [amuleto] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "amuleto_suerte" AND equipado = 1', [userJid]
-        )
-        const tieneAmuleto = amuleto.length > 0
-        if (tieneAmuleto) monedas = Math.floor(monedas * 1.3)
+        const amuleto = await obtenerItemEquipado(userJid, 'amuleto_suerte')
+        const multiplicadorAmuleto = calcularMultiplicadorMejora('amuleto_suerte', amuleto)
+        const nivelMejoraAmuleto = obtenerNivelMejora(amuleto)
+        monedas = Math.floor(monedas * multiplicadorAmuleto)
 
-        const probItem = tieneAmuleto ? 0.8 : 0.6
+        const probItem = amuleto ? Math.min(0.95, 0.8 + (nivelMejoraAmuleto * 0.02)) : 0.6
         const consigueItem = Math.random() < probItem
         const itemConseguido = consigueItem ? exp.items[Math.floor(Math.random() * exp.items.length)] : null
 
@@ -55,7 +59,7 @@ const expedicion = {
             await db.execute('INSERT INTO historico_items (jid, accion, item) VALUES (?, "expedicion", ?)', [userJid, itemConseguido])
         }
 
-        const amuletoTexto = tieneAmuleto ? '\n🍀 *Amuleto de Suerte activo!*' : ''
+        const amuletoTexto = formatearLineaBonus('amuleto_suerte', amuleto, 'activo')
         const itemTexto = itemConseguido ? `\n🎒 *¡Encontraste:* *${itemConseguido}*!` : `\n🎒 Esta vez no encontraste ningún ítem.`
 
         await sock.sendMessage(jid, {

@@ -1,5 +1,10 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import {
+    calcularMultiplicadorMejora,
+    formatearLineaBonus,
+    obtenerItemEquipado
+} from './mejorasItems.js'
 
 const aventuras = [
     {
@@ -75,8 +80,13 @@ const aventura = {
         }
 
         const av = disponibles[Math.floor(Math.random() * disponibles.length)]
-        const monedas = Math.floor(Math.random() * (av.monedas[1] - av.monedas[0])) + av.monedas[0]
-        const xpGanado = Math.floor(Math.random() * (av.xp[1] - av.xp[0])) + av.xp[0]
+        let monedas = Math.floor(Math.random() * (av.monedas[1] - av.monedas[0])) + av.monedas[0]
+        let xpGanado = Math.floor(Math.random() * (av.xp[1] - av.xp[0])) + av.xp[0]
+
+        const espada = await obtenerItemEquipado(userJid, 'espada_basica')
+        const multiplicadorEspada = calcularMultiplicadorMejora('espada_basica', espada)
+        monedas = Math.floor(monedas * multiplicadorEspada)
+        xpGanado = Math.floor(xpGanado * multiplicadorEspada)
 
         // 75% probabilidad de conseguir ítem (mayor que expedición)
         const consigueItem = Math.random() < 0.75
@@ -101,9 +111,10 @@ const aventura = {
         const itemTexto = itemConseguido
             ? `\n🎒 *¡Obtuviste:* *${itemConseguido}*!`
             : `\n🎒 Esta vez no obtuviste ningún ítem.`
+        const espadaTexto = formatearLineaBonus('espada_basica', espada, 'activa')
 
         await sock.sendMessage(jid, {
-            text: `⚔️ *AVENTURA*\n\n*${av.nombre}*\n${av.descripcion}.\n\n💰 *Monedas:* +${monedas}\n✨ *XP:* +${xpGanado}${itemTexto}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + monedas} monedas\n\n⏳ Próxima aventura disponible en *3 horas*.`
+            text: `⚔️ *AVENTURA*\n\n*${av.nombre}*\n${av.descripcion}.\n\n💰 *Monedas:* +${monedas}\n✨ *XP:* +${xpGanado}${espadaTexto}${itemTexto}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + monedas} monedas\n\n⏳ Próxima aventura disponible en *3 horas*.`
         }, { quoted: mensaje })
     }
 }

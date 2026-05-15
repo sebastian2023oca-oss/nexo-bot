@@ -1,5 +1,10 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import {
+    calcularMultiplicadorMejora,
+    formatearLineaBonus,
+    obtenerItemEquipado
+} from './mejorasItems.js'
 
 const recolectar = {
     async ejecutar(sock, mensaje) {
@@ -30,18 +35,15 @@ const recolectar = {
         let valor = objeto.valor
         const xpGanado = Math.floor(Math.random() * 6) + 2
 
-        // Verificar amuleto_suerte equipado → +30%
-        const [amuleto] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "amuleto_suerte" AND equipado = 1', [userJid]
-        )
-        const tieneAmuleto = amuleto.length > 0
-        if (tieneAmuleto) valor = Math.floor(valor * 1.3)
+        const amuleto = await obtenerItemEquipado(userJid, 'amuleto_suerte')
+        const multiplicadorAmuleto = calcularMultiplicadorMejora('amuleto_suerte', amuleto)
+        valor = Math.floor(valor * multiplicadorAmuleto)
 
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
         await registrarCooldown(userJid, 'recolectar', 15)
         await darXP(userJid, xpGanado)
 
-        const amuletoTexto = tieneAmuleto ? '\n🍀 *Amuleto de Suerte activo!* (+30% valor)' : ''
+        const amuletoTexto = formatearLineaBonus('amuleto_suerte', amuleto, 'activo')
 
         await sock.sendMessage(jid, {
             text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${valor} monedas*.${amuletoTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`

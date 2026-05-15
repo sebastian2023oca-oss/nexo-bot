@@ -19,7 +19,9 @@ const inventario = {
 
         for (const item of rows) {
             const equipadoTag = item.equipado ? ' ⚡ *[EQUIPADO]*' : ''
-            texto += `✦ *${item.item}* x${item.cantidad}${equipadoTag}\n`
+            const nivelMejora = Number(item.nivel_mejora || 0)
+            const mejoraTag = nivelMejora > 0 ? ` 🚀 +${nivelMejora}` : ''
+            texto += `✦ *${item.item}* x${item.cantidad}${mejoraTag}${equipadoTag}\n`
         }
 
         texto += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 Usa *.usar <item>* para activar un objeto`

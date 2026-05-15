@@ -1,5 +1,6 @@
 import db from './db.js'
 import { darXP } from './utils.js'
+import { calcularMultiplicadorMejora, obtenerNivelMejora } from './mejorasItems.js'
 
 const usar = {
     async ejecutar(sock, mensaje, args) {
@@ -21,34 +22,41 @@ const usar = {
         }
 
         let respuesta = ''
+        const nivelMejora = obtenerNivelMejora(rows[0])
+        const multiplicadorMejora = calcularMultiplicadorMejora(itemKey, rows[0])
+        const mejoraTexto = nivelMejora > 0 ? `\n🚀 *Mejora aplicada:* +${nivelMejora} | x${multiplicadorMejora.toFixed(2)}` : ''
 
         switch (itemKey) {
             case 'cristal_xp': {
-                await darXP(userJid, 50)
-                respuesta = `✨ *Cristal de XP usado!*\n\nGanaste *+50 XP*.`
+                const xp = Math.floor(50 * multiplicadorMejora)
+                await darXP(userJid, xp)
+                respuesta = `✨ *Cristal de XP usado!*\n\nGanaste *+${xp} XP*.${mejoraTexto}`
                 break
             }
             case 'moneda_dorada': {
-                await db.execute('UPDATE usuarios SET monedas = monedas + 2000 WHERE jid = ?', [userJid])
-                respuesta = `💰 *Moneda Dorada usada!*\n\nRecibiste *+2000 monedas*.`
+                const monedas = Math.floor(2000 * multiplicadorMejora)
+                await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [monedas, userJid])
+                respuesta = `💰 *Moneda Dorada usada!*\n\nRecibiste *+${monedas} monedas*.${mejoraTexto}`
                 break
             }
             case 'pocion_vida': {
-                await db.execute('UPDATE usuarios SET monedas = monedas + 500 WHERE jid = ?', [userJid])
-                respuesta = `🧪 *Poción de Vida usada!*\n\nRecuperaste energía y recibiste *+500 monedas*.`
+                const monedas = Math.floor(500 * multiplicadorMejora)
+                await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [monedas, userJid])
+                respuesta = `🧪 *Poción de Vida usada!*\n\nRecuperaste energía y recibiste *+${monedas} monedas*.${mejoraTexto}`
                 break
             }
             case 'caja_premium': {
                 const premios = [500, 1000, 2000, 5000, 10000]
-                const premio = premios[Math.floor(Math.random() * premios.length)]
+                const premioBase = premios[Math.floor(Math.random() * premios.length)]
+                const premio = Math.floor(premioBase * multiplicadorMejora)
                 await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [premio, userJid])
-                respuesta = `🎁 *Caja Premium abierta!*\n\n¡Encontraste *${premio} monedas*!`
+                respuesta = `🎁 *Caja Premium abierta!*\n\n¡Encontraste *${premio} monedas*!${mejoraTexto}`
                 break
             }
             case 'ticket_vip_dia': {
-                // Sin VIP en el RPG — se convierte en monedas
-                await db.execute('UPDATE usuarios SET monedas = monedas + 5000 WHERE jid = ?', [userJid])
-                respuesta = `🎫 *Ticket especial canjeado!*\n\nRecibiste *+5000 monedas* a cambio.`
+                const monedas = Math.floor(5000 * multiplicadorMejora)
+                await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [monedas, userJid])
+                respuesta = `🎫 *Ticket especial canjeado!*\n\nRecibiste *+${monedas} monedas* a cambio.${mejoraTexto}`
                 break
             }
             default: {

@@ -1,5 +1,10 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
+import {
+    calcularMultiplicadorMejora,
+    formatearLineaBonus,
+    obtenerItemEquipado
+} from './mejorasItems.js'
 
 const cazar = {
     async ejecutar(sock, mensaje) {
@@ -30,13 +35,9 @@ const cazar = {
         let valor = animal.valor
         const xpGanado = valor > 0 ? Math.floor(Math.random() * 8) + 3 : 1
 
-        // Verificar trampa_caza equipada → +40% captura
-        const [trampa] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "trampa_caza" AND equipado = 1',
-            [userJid]
-        )
-        const tieneTrampa = trampa.length > 0
-        if (tieneTrampa && valor > 0) valor = Math.floor(valor * 1.4)
+        const trampa = await obtenerItemEquipado(userJid, 'trampa_caza')
+        const multiplicadorTrampa = calcularMultiplicadorMejora('trampa_caza', trampa)
+        if (valor > 0) valor = Math.floor(valor * multiplicadorTrampa)
 
         if (valor > 0) {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
@@ -44,7 +45,7 @@ const cazar = {
         await registrarCooldown(userJid, 'cazar', 15)
         await darXP(userJid, xpGanado)
 
-        const trampaTexto = tieneTrampa && valor > 0 ? '\n🪤 *Trampa de Caza activa!* (+40% valor)' : ''
+        const trampaTexto = valor > 0 ? formatearLineaBonus('trampa_caza', trampa, 'activa') : ''
 
         await sock.sendMessage(jid, {
             text: `🏹 *CAZA*\n\n${valor > 0 ? `Cazaste *${animal.nombre}* y lo vendiste por *${valor} monedas*.` : `*${animal.nombre}*... Más suerte la próxima vez.`}${trampaTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
