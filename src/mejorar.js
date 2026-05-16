@@ -122,14 +122,14 @@ const mejorar = {
             await connection.rollback()
             console.error('Error en comando mejorar:', error)
             
-            // Envía la alerta técnica detallada a tu grupo de owners
+            // Envía la alerta técnica corregida sin usar variables inexistentes
             await reportarErrorComando(sock, {
-                comandoTexto: texto || `.mejorar ${itemKey}`, 
+                comandoTexto: `.mejorar ${itemKey || ''}`, 
                 mensaje,
                 error
             })
 
-            // Notifica al usuario sin exponer datos internos de la VPS
+            // Notifica al usuario
             await sock.sendMessage(jid, {
                 text: '❌ Ocurrió un error al intentar mejorar el ítem.\n\nEl equipo de owners ya fue avisado automáticamente.'
             }, { quoted: mensaje })
