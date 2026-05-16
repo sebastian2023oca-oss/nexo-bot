@@ -1,57 +1,22 @@
-import { OWNERS_JID } from './config.js'
+const GRUPO_OWNERS = '120363425755647814@g.us'
 
-const MAX_ERROR_LENGTH = 3500
-
-function limpiarTexto(valor, fallback = 'No disponible') {
-    if (valor === null || valor === undefined) return fallback
-    const texto = String(valor).trim()
-    return texto.length > 0 ? texto : fallback
-}
-
-function recortar(texto, limite = MAX_ERROR_LENGTH) {
-    const valor = limpiarTexto(texto)
-    if (valor.length <= limite) return valor
-    return `${valor.slice(0, limite)}\n\n... Error recortado por longitud.`
-}
-
-function obtenerUsuario(mensaje) {
-    return mensaje?.key?.participant || mensaje?.key?.remoteJid || 'usuario_desconocido'
-}
-
-function obtenerGrupo(mensaje) {
-    const jid = mensaje?.key?.remoteJid
-    if (!jid) return 'grupo_desconocido'
-    return jid.endsWith('@g.us') ? jid : 'Chat privado'
-}
-
-function formatearError(error) {
-    if (!error) return 'Error desconocido'
-    if (error.stack) return error.stack
-    if (error.message) return error.message
-    return String(error)
-}
-
-export function crearMensajeErrorComando({ comandoTexto, mensaje, error }) {
-    const comando = limpiarTexto(comandoTexto, 'Comando no detectado')
-    const usuario = obtenerUsuario(mensaje)
-    const grupo = obtenerGrupo(mensaje)
-    const detalleError = recortar(formatearError(error))
-
-    return `❌ *Error en comando*\n\n` +
-        `*Comando:* ${comando}\n` +
-        `*Usuario:* ${usuario}\n\n` +
-        `*Grupo:* ${grupo}\n\n` +
-        `*Error:* ${detalleError}`
-}
-
-export async function reportarErrorComando(sock, datos) {
+export async function reportarErrorComando(sock, { comandoTexto, mensaje, error }) {
     try {
-        if (!sock?.sendMessage) return
+        const usuario = mensaje.key.participant || mensaje.key.remoteJid
+        const chatOrigen = mensaje.key.remoteJid
 
-        await sock.sendMessage(OWNERS_JID, {
-            text: crearMensajeErrorComando(datos)
+        const textoError = `⚠️ *REPORT DE ERROR - NEXO BOT* ⚠️\n\n` +
+                           `📌 *Comando:* \`${comandoTexto}\`\n` +
+                           `👥 *Chat:* \`${chatOrigen}\`\n` +
+                           `👤 *Usuario:* @${usuario.split('@')[0]}\n` +
+                           `❌ *Error:* ${error.message || error}\n\n` +
+                           `💻 *Stack:* \n\`\`\`${error.stack || 'No disponible'}\`\`\``
+
+        await sock.sendMessage(GRUPO_OWNERS, { 
+            text: textoError,
+            mentions: [usuario]
         })
-    } catch (errorReporte) {
-        console.error('No se pudo enviar el error al grupo de owners:', errorReporte)
+    } catch (sendErr) {
+        console.error('No se pudo enviar el reporte de error a WhatsApp:', sendErr)
     }
 }
