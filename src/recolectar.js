@@ -32,21 +32,24 @@ const recolectar = {
             { nombre: '📦 Caja abandonada', valor: 150 },
         ]
         const objeto = objetos[Math.floor(Math.random() * objetos.length)]
-        let valor = objeto.valor
+        
+        let valorBase = objeto.valor
+        let valorFinal = valorBase
         const xpGanado = Math.floor(Math.random() * 6) + 2
 
         const amuleto = await obtenerItemEquipado(userJid, 'amuleto_suerte')
         const multiplicadorAmuleto = calcularMultiplicadorMejora('amuleto_suerte', amuleto)
-        valor = Math.floor(valor * multiplicadorAmuleto)
+        
+        valorFinal = Math.floor(valorBase * multiplicadorAmuleto)
 
-        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
+        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valorFinal, userJid])
         await registrarCooldown(userJid, 'recolectar', 15)
         await darXP(userJid, xpGanado)
 
         const amuletoTexto = formatearLineaBonus('amuleto_suerte', amuleto, 'activo')
 
         await sock.sendMessage(jid, {
-            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}* y lo vendiste por *${valor} monedas*.${amuletoTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
+            text: `🌿 *RECOLECCIÓN*\n\nEncontraste *${objeto.nombre}*.\n\n📦 *Valor base:* ${valorBase} monedas\n💰 *Total ganado:* ${valorFinal} monedas${amuletoTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valorFinal} monedas`
         }, { quoted: mensaje })
     }
 }

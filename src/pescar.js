@@ -31,22 +31,29 @@ const pescar = {
             { nombre: '🎣 Bota vieja', valor: 10 },
             { nombre: '💎 Pez dorado', valor: 500 },
         ]
+        
         const pez = peces[Math.floor(Math.random() * peces.length)]
-        let valor = pez.valor
+        
+        // Separamos el valor base del valor final
+        let valorBase = pez.valor
+        let valorFinal = valorBase 
         const xpGanado = Math.floor(Math.random() * 6) + 2
 
         const caña = await obtenerItemEquipado(userJid, 'caña_premium')
         const multiplicadorCaña = calcularMultiplicadorMejora('caña_premium', caña)
-        valor = Math.floor(valor * multiplicadorCaña)
+        
+        // Aplicamos la matemática real
+        valorFinal = Math.floor(valorBase * multiplicadorCaña)
 
-        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valor, userJid])
+        await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [valorFinal, userJid])
         await registrarCooldown(userJid, 'pescar', 15)
         await darXP(userJid, xpGanado)
 
         const cañaTexto = formatearLineaBonus('caña_premium', caña, 'activa')
 
+        // Nuevo diseño visual para que el jugador entienda la ganancia
         await sock.sendMessage(jid, {
-            text: `🎣 *PESCA*\n\nPescaste *${pez.nombre}* y lo vendiste por *${valor} monedas*.${cañaTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valor} monedas`
+            text: `🎣 *PESCA*\n\nPescaste *${pez.nombre}*.\n\n📦 *Valor base:* ${valorBase} monedas\n💰 *Total ganado:* ${valorFinal} monedas${cañaTexto}\n✨ *XP ganado:* +${xpGanado}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + valorFinal} monedas`
         }, { quoted: mensaje })
     }
 }

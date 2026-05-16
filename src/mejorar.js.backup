@@ -42,7 +42,7 @@ const mejorar = {
             const [invItem] = await connection.execute(
                 `SELECT iu.item, iu.cantidad, COALESCE(iu.nivel_mejora, 0) AS nivel_mejora, t.nombre
                  FROM inventario_usuario iu
-                 INNER JOIN tienda t ON t.item = iu.item
+                 INNER JOIN tienda t ON t.item COLLATE utf8mb4_general_ci = iu.item COLLATE utf8mb4_general_ci
                  WHERE iu.jid = ? AND iu.item = ?
                  LIMIT 1
                  FOR UPDATE`,
@@ -119,20 +119,12 @@ const mejorar = {
                 text: `❌ *MEJORA FALLIDA*\n\nLa mejora de *${nombreItem}* falló esta vez.\n🔑 Código: *${itemKey}*\n📉 *Nivel actual:* +${nivelAnterior}\n\n💎 Se consumió 1 *Gema de Mejora* de todas formas.`
             }, { quoted: mensaje })
         } catch (error) {
+            // Hacemos el rollback de seguridad en la base de datos
             await connection.rollback()
-            console.error('Error en comando mejorar:', error)
             
-            // Envía la alerta técnica detallada a tu grupo de owners
-            await reportarErrorComando(sock, {
-                comandoTexto: texto || `.mejorar ${itemKey}`, 
-                mensaje,
-                error
-            })
-
-            // Notifica al usuario sin exponer datos internos de la VPS
-            await sock.sendMessage(jid, {
-                text: '❌ Ocurrió un error al intentar mejorar el ítem.\n\nEl equipo de owners ya fue avisado automáticamente.'
-            }, { quoted: mensaje })
+            // Re-lanzamos el error hacia handler.js para que el reportero global 
+            // haga su trabajo de forma limpia y automática usando las variables correctas
+            throw error
         } finally {
             connection.release()
         }
