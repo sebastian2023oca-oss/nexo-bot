@@ -97,7 +97,7 @@ async function registrarTopDelDia(rows) {
         const usuario = rows[i]
 
         await db.execute(
-            `INSERT INTO top_historial (jid, posicion, fecha)
+            `INSERT IGNORE INTO top_historial (jid, posicion, fecha)
              VALUES (?, ?, CURDATE())`,
             [usuario.jid, posicion]
         )
