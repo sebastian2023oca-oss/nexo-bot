@@ -119,20 +119,12 @@ const mejorar = {
                 text: `❌ *MEJORA FALLIDA*\n\nLa mejora de *${nombreItem}* falló esta vez.\n🔑 Código: *${itemKey}*\n📉 *Nivel actual:* +${nivelAnterior}\n\n💎 Se consumió 1 *Gema de Mejora* de todas formas.`
             }, { quoted: mensaje })
         } catch (error) {
+            // Hacemos el rollback de seguridad en la base de datos
             await connection.rollback()
-            console.error('Error en comando mejorar:', error)
             
-            // Envía la alerta técnica corregida sin usar variables inexistentes
-            await reportarErrorComando(sock, {
-                comandoTexto: `.mejorar ${itemKey || ''}`, 
-                mensaje,
-                error
-            })
-
-            // Notifica al usuario
-            await sock.sendMessage(jid, {
-                text: '❌ Ocurrió un error al intentar mejorar el ítem.\n\nEl equipo de owners ya fue avisado automáticamente.'
-            }, { quoted: mensaje })
+            // Re-lanzamos el error hacia handler.js para que el reportero global 
+            // haga su trabajo de forma limpia y automática usando las variables correctas
+            throw error
         } finally {
             connection.release()
         }
