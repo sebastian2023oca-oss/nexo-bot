@@ -42,7 +42,7 @@ const mejorar = {
             const [invItem] = await connection.execute(
                 `SELECT iu.item, iu.cantidad, COALESCE(iu.nivel_mejora, 0) AS nivel_mejora, t.nombre
                  FROM inventario_usuario iu
-                 INNER JOIN tienda t ON t.item = iu.item
+                 INNER JOIN tienda t ON t.item COLLATE utf8mb4_general_ci = iu.item COLLATE utf8mb4_general_ci
                  WHERE iu.jid = ? AND iu.item = ?
                  LIMIT 1
                  FOR UPDATE`,
