@@ -21,35 +21,6 @@ const INSIGNIAS_TOP = {
 
 const MEDALLAS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
 
-async function columnaExiste(tabla, columna) {
-    const [rows] = await db.execute(
-        `SELECT COLUMN_NAME
-         FROM INFORMATION_SCHEMA.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE()
-           AND TABLE_NAME = ?
-           AND COLUMN_NAME = ?
-         LIMIT 1`,
-        [tabla, columna]
-    )
-
-    return rows.length > 0
-}
-
-async function agregarColumnaSiNoExiste(tabla, columna, definicion) {
-    const existe = await columnaExiste(tabla, columna)
-    if (existe) return
-
-    await db.execute(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${definicion}`)
-}
-
-async function ejecutarSinRomper(sql) {
-    try {
-        await db.execute(sql)
-    } catch (error) {
-        console.warn('⚠️ Aviso en migración de top:', error.message)
-    }
-}
-
 async function asegurarTablasTop() {
     await db.execute(`
         CREATE TABLE IF NOT EXISTS top_historial (
@@ -72,24 +43,18 @@ async function asegurarTablasTop() {
         )
     `)
 
-    await agregarColumnaSiNoExiste('top_historial', 'jid', 'VARCHAR(60) NOT NULL')
-    await agregarColumnaSiNoExiste('top_historial', 'posicion', 'INT NOT NULL DEFAULT 0')
-    await agregarColumnaSiNoExiste('top_historial', 'fecha', 'DATE NULL')
-    await agregarColumnaSiNoExiste('top_historial', 'creado_en', 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP')
-
-    await agregarColumnaSiNoExiste('top_recompensas', 'jid', 'VARCHAR(60) NOT NULL')
-    await agregarColumnaSiNoExiste('top_recompensas', 'posicion', 'INT NOT NULL DEFAULT 0')
-    await agregarColumnaSiNoExiste('top_recompensas', 'monto', 'INT NOT NULL DEFAULT 0')
-    await agregarColumnaSiNoExiste('top_recompensas', 'fecha', 'DATE NULL')
-    await agregarColumnaSiNoExiste('top_recompensas', 'creado_en', 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP')
-
-    await ejecutarSinRomper('CREATE INDEX idx_top_historial_jid_pos_fecha ON top_historial (jid, posicion, fecha)')
-    await ejecutarSinRomper('CREATE INDEX idx_top_recompensas_jid_fecha ON top_recompensas (jid, fecha)')
+    // Nueva tabla inteligente para controlar las rachas exactas
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS top_rachas (
+            jid VARCHAR(60) PRIMARY KEY,
+            posicion_actual INT NOT NULL,
+            racha_dias INT NOT NULL DEFAULT 1,
+            ultima_fecha DATE NOT NULL
+        )
+    `)
 }
 
 async function registrarTopDelDia(rows) {
-    // El Top del día debe representar el estado actual.
-    // Si alguien baja de Top 1 a Top 2, o sale del Top 3, se elimina su registro anterior de hoy.
     await db.execute('DELETE FROM top_historial WHERE fecha = CURDATE()')
 
     for (let i = 0; i < Math.min(3, rows.length); i++) {
@@ -104,23 +69,6 @@ async function registrarTopDelDia(rows) {
     }
 }
 
-async function obtenerDiasConsecutivosEnMismaPosicion(jid, posicion) {
-    const [rows] = await db.execute(
-        `SELECT COUNT(DISTINCT fecha) AS dias
-         FROM top_historial
-         WHERE jid = ?
-           AND posicion = ?
-           AND fecha IN (
-               CURDATE(),
-               DATE_SUB(CURDATE(), INTERVAL 1 DAY),
-               DATE_SUB(CURDATE(), INTERVAL 2 DAY)
-           )`,
-        [jid, posicion]
-    )
-
-    return Number(rows[0]?.dias || 0)
-}
-
 async function yaRecibioRecompensaHoy(jid) {
     const [rows] = await db.execute(
         `SELECT id
@@ -130,7 +78,6 @@ async function yaRecibioRecompensaHoy(jid) {
          LIMIT 1`,
         [jid]
     )
-
     return rows.length > 0
 }
 
@@ -142,28 +89,89 @@ async function darRecompensasTop(sock, jidGrupo, mensaje, rows) {
 
         if (!recompensa) continue
 
-        const diasConsecutivos = await obtenerDiasConsecutivosEnMismaPosicion(usuario.jid, posicion)
-
-        if (diasConsecutivos < 3) continue
-
-        const yaRecibio = await yaRecibioRecompensaHoy(usuario.jid)
-        if (yaRecibio) continue
-
-        await db.execute(
-            'UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?',
-            [recompensa, usuario.jid]
+        // Consultamos la racha del usuario calculando los estados de fecha directamente en MySQL
+        const [rachaRows] = await db.execute(
+            `SELECT posicion_actual, racha_dias, 
+                    (ultima_fecha = CURDATE()) AS es_hoy,
+                    (ultima_fecha = DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AS es_ayer
+             FROM top_rachas WHERE jid = ?`,
+            [usuario.jid]
         )
 
-        await db.execute(
-            `INSERT INTO top_recompensas (jid, posicion, monto, fecha)
-             VALUES (?, ?, ?, CURDATE())`,
-            [usuario.jid, posicion, recompensa]
-        )
+        let rachaDias = 1
 
-        await sock.sendMessage(jidGrupo, {
-            text: `🎁 @${usuario.jid.split('@')[0]}, toma tu recompensa diaria por estar entre los mejores globalmente.\n\n🏆 *Top:* ${posicion}\n🔥 *Racha:* 3 días consecutivos en el Top ${posicion}\n💰 *Dinero obtenido:* ${recompensa} monedas`,
-            mentions: [usuario.jid],
-        }, { quoted: mensaje })
+        if (rachaRows.length === 0) {
+            // Primera vez que este usuario pisa el Top 3 histórico
+            await db.execute(
+                `INSERT INTO top_rachas (jid, posicion_actual, racha_dias, ultima_fecha) 
+                 VALUES (?, ?, 1, CURDATE())`,
+                [usuario.jid, posicion]
+            )
+            rachaDias = 1
+        } else {
+            const r = rachaRows[0]
+
+            if (r.es_hoy) {
+                // Si el comando se vuelve a usar hoy y el usuario cambió de puesto hoy mismo, la racha se quiebra
+                if (parseInt(r.posicion_actual) !== posicion) {
+                    await db.execute(
+                        `UPDATE top_rachas SET posicion_actual = ?, racha_dias = 1 WHERE jid = ?`,
+                        [posicion, usuario.jid]
+                    )
+                    rachaDias = 1
+                } else {
+                    rachaDias = r.racha_dias
+                }
+            } else if (r.es_ayer) {
+                // Estuvo en el top ayer. ¿Mantuvo la misma posición exacta?
+                if (parseInt(r.posicion_actual) === posicion) {
+                    rachaDias = r.racha_dias + 1
+                    await db.execute(
+                        `UPDATE top_rachas SET racha_dias = ?, ultima_fecha = CURDATE() WHERE jid = ?`,
+                        [rachaDias, usuario.jid]
+                    )
+                } else {
+                    // Posición alterada (subió o bajó), la racha se rompe y vuelve a 1
+                    rachaDias = 1
+                    await db.execute(
+                        `UPDATE top_rachas SET posicion_actual = ?, racha_dias = 1, ultima_fecha = CURDATE() WHERE jid = ?`,
+                        [posicion, usuario.jid]
+                    )
+                }
+            } else {
+                // Pasaron más días o se cayó del top, racha expirada
+                rachaDias = 1
+                await db.execute(
+                    `UPDATE top_rachas SET posicion_actual = ?, racha_dias = 1, ultima_fecha = CURDATE() WHERE jid = ?`,
+                    [posicion, usuario.jid]
+                )
+            }
+        }
+
+        // Se entrega el premio cada 3 días acumulados (Día 3, Día 6, Día 9...) para premiar la constancia prolongada
+        if (rachaDias % 3 === 0) {
+            const yaRecibio = await yaRecibioRecompensaHoy(usuario.jid)
+            if (!yaRecibio) {
+                // Añadir monedas al balance general
+                await db.execute(
+                    'UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?',
+                    [recompensa, usuario.jid]
+                )
+
+                // Registrar para bloquear doble reclamos el mismo día
+                await db.execute(
+                    `INSERT INTO top_recompensas (jid, posicion, monto, fecha)
+                     VALUES (?, ?, ?, CURDATE())`,
+                    [usuario.jid, posicion, recompensa]
+                )
+
+                // Mensaje con el formato exacto solicitado
+                await sock.sendMessage(jidGrupo, {
+                    text: `🎉 ¡Felicidades @${usuario.jid.split('@')[0]}!, aquí tienes tu recompensa de ${recompensa} monedas por estar en el top ${posicion} durante 3 días consecutivos! Tu racha es de ${rachaDias} días. 🏆`,
+                    mentions: [usuario.jid],
+                }, { quoted: mensaje })
+            }
+        }
     }
 }
 
@@ -212,7 +220,7 @@ const top = {
             return
         }
 
-        let texto = '🏆 *TOP 10 USUARIOS*\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
+        let texto = '🏆 *TOP 10 USUARIOS GLOBAL*\n\n────────────────────────────────\n\n'
         const menciones = []
 
         rows.forEach((usuario, i) => {
@@ -220,13 +228,13 @@ const top = {
             menciones.push(usuario.jid)
         })
 
-        texto += '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
-        texto += '\n🎁 *Recompensa diaria Top 3:*\n'
-        texto += '🥇 Top 1: 1500 monedas\n'
-        texto += '🥈 Top 2: 1000 monedas\n'
+        texto += '\n────────────────────────────────\n'
+        texto += '\n🎁 *Recompensa por racha Top 3:*\n'
+        texto += '🥇 Top 1: 1,500 monedas\n'
+        texto += '🥈 Top 2: 1,000 monedas\n'
         texto += '🥉 Top 3: 500 monedas\n'
-        texto += '\n⏳ Se entrega al completar 3 días consecutivos en la misma posición.'
-        texto += '\n⚠️ Si cambia de posición o sale del Top 3, la racha se reinicia.'
+        texto += '\n⏳ Se entrega de forma automática cada 3 días consecutivos manteniendo la misma posición exacta.'
+        texto += '\n⚠️ Si subes, bajas de puesto o sales del Top 3, tu racha se reiniciará por completo.'
 
         await sock.sendMessage(jid, { text: texto, mentions: menciones }, { quoted: mensaje })
 
