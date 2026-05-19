@@ -4,15 +4,12 @@ import { fileURLToPath } from 'url'
 import menu1 from './menu1.js'
 import menu2 from './menu2.js'
 import menu3 from './menu3.js'
+import menu4 from './menu4.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
 
-const submenus = {
-    1: menu1,
-    2: menu2,
-    3: menu3,
-}
+const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4 }
 
 const menuTexto = `╔════════════════════════════════╗
 ║      ✦  N E X O  B O T  ✦      ║
@@ -59,6 +56,7 @@ const menuTexto = `╔═══════════════════�
   ✦ .menu 1      → ver Perfil
   ✦ .menu 2      → ver Economía
   ✦ .menu 3      → ver Tienda & Inventario
+  ✦ .menu 4      → ver Juegos
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -77,19 +75,14 @@ const menu = {
         const jid = mensaje.key.remoteJid
 
         if (!args[0]) {
-            await sock.sendMessage(jid, {
-                image: imagen(),
-                caption: menuTexto
-            }, { quoted: mensaje })
+            await sock.sendMessage(jid, { image: imagen(), caption: menuTexto }, { quoted: mensaje })
             return
         }
 
         const pagina = parseInt(args[0])
 
         if (isNaN(pagina) || pagina < 1 || pagina > 24) {
-            await sock.sendMessage(jid, {
-                text: `❌ Página inválida. Usa un número del *1* al *24*.\n\nEjemplo: *.menu 4*`
-            }, { quoted: mensaje })
+            await sock.sendMessage(jid, { text: `❌ Página inválida. Usa un número del *1* al *24*.` }, { quoted: mensaje })
             return
         }
 
@@ -98,9 +91,7 @@ const menu = {
             return
         }
 
-        await sock.sendMessage(jid, {
-            text: `🚧 La página *${pagina}* aún está en construcción.\n\nEscribe *.menu* para ver todas las categorías.`
-        }, { quoted: mensaje })
+        await sock.sendMessage(jid, { text: `🚧 La página *${pagina}* aún está en construcción.\n\nEscribe *.menu* para ver todas las categorías.` }, { quoted: mensaje })
     }
 }
 
