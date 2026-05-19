@@ -84,8 +84,22 @@ import almacenar from './src/almacenar.js'
 import sacar from './src/sacar.js'
 import historico from './src/historico.js'
 
+// Juegos
+import trivia from './src/trivia.js'
+import adivina from './src/adivina.js'
+import hangman from './src/hangman.js'
+import quiz from './src/quiz.js'
+import mathgame from './src/mathgame.js'
+import dado from './src/dado.js'
+import suerte from './src/suerte.js'
+import luck from './src/luck.js'
+import ppt from './src/ppt.js'
+import duelo from './src/duelo.js'
+import speedtype from './src/speedtype.js'
+import adivinanumero from './src/adivinanumero.js'
+import riddle from './src/riddle.js'
+
 import db from './src/db.js'
-import { reportarErrorComando } from './src/errorReporter.js'
 
 const PREFIJO = '.'
 
@@ -107,6 +121,10 @@ const comandos = {
     expedicion, aventura,
     tienda, precio, stock, inventario, listar, usar, equipar, desequipar,
     vender, regalar, mejorar, bodega, almacenar, sacar, historico,
+    trivia, adivina, hangman, quiz, mathgame,
+    dado, suerte, luck,
+    ppt, duelo, speedtype,
+    adivinanumero, riddle,
 }
 
 const permitidosEnPrivado = ['addbot']
@@ -165,16 +183,6 @@ async function manejarMensaje(sock, mensaje) {
         await comando.ejecutar(sock, mensaje, args)
     } catch (error) {
         console.error(`Error ejecutando el comando "${cmd}":`, error)
-
-        await reportarErrorComando(sock, {
-            comandoTexto: texto,
-            mensaje,
-            error
-        })
-
-        await sock.sendMessage(jid, {
-            text: '❌ Ocurrió un error al ejecutar el comando.\n\nEl equipo de owners ya fue avisado automáticamente.'
-        }, { quoted: mensaje })
     }
 }
 
