@@ -6,23 +6,15 @@ import {
     darRecompensaJuego
 } from './juegosUtils.js'
 
-const frases = [
-    'el cielo es azul',
-    'hola mundo desde el bot',
-    'velocidad maxima',
-    'jugando con el bot',
-    'nexo bot es epico',
-    'teclea rapido ahora',
-    'la vida es bella',
-    'coding es divertido',
-    'aprendiendo cada dia',
-    'el tiempo vuela rapido',
-    'juega y gana monedas',
-    'sigue intentando siempre'
+const emojisPool = [
+    '🍎','🍌','🍇','🍓',
+    '🍕','🎮','⚽','🎵',
+    '🌟','💎','🔥','🌊'
 ]
 
-const speedtype = {
-    async ejecutar(sock, mensaje) {
+const memory = {
+
+    async ejecutar(sock,mensaje){
 
         const jid =
             mensaje.key.remoteJid
@@ -34,38 +26,45 @@ const speedtype = {
         const enCooldown =
             await verificarCooldown(
                 userJid,
-                'speedtype',
+                'memory',
                 3
             )
 
-        if (enCooldown) {
+        if(enCooldown){
 
             await sock.sendMessage(
                 jid,
                 {
                     text:
-`⏳ Espera *${enCooldown} minutos* para jugar otra vez.`
+`⏳ Espera *${enCooldown} minutos* para volver a jugar.`
                 },
-                { quoted: mensaje }
+                {
+                    quoted:
+                    mensaje
+                }
             )
 
             return
         }
 
-        const frase =
-            frases[
-                Math.floor(
-                    Math.random() *
-                    frases.length
-                )
-            ]
+        const shuffled =
+            [...emojisPool]
+            .sort(
+                ()=>Math.random()-0.5
+            )
 
-        const inicio =
-            Date.now()
+        const secuencia =
+            shuffled.slice(
+                0,
+                4
+            )
+
+        const respuestaEsperada =
+            secuencia.join(' ')
 
         await registrarCooldown(
             userJid,
-            'speedtype',
+            'memory',
             3
         )
 
@@ -73,37 +72,65 @@ const speedtype = {
             jid,
             {
                 text:
-`⌨️ *VELOCIDAD DE ESCRITURA*
+`🧠 *JUEGO DE MEMORIA*
 
-Escribe exactamente:
+Memoriza:
 
-"${frase}"
+${respuestaEsperada}
 
-Tienes *15 segundos*.`
+⏳ Tienes *5 segundos*`
             },
-            { quoted: mensaje }
+            {
+                quoted:
+                mensaje
+            }
+        )
+
+        await new Promise(
+            r=>setTimeout(
+                r,
+                5000
+            )
+        )
+
+        await sock.sendMessage(
+            jid,
+            {
+                text:
+`❓ *¿Cuál era la secuencia?*
+
+Escribe los emojis
+separados por espacios.
+
+Ejemplo:
+🍎 🎮 🌟 💎
+
+Tienes *20 segundos*.`
+            }
         )
 
         const timeout =
-            setTimeout(async()=>{
+        setTimeout(
+        async()=>{
 
-                delete global.juegosActivos[
-                    `${jid}-${userJid}`
-                ]
+            delete global
+            .juegosActivos[
+                `${jid}-${userJid}`
+            ]
 
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
+            await sock.sendMessage(
+                jid,
+                {
+                    text:
 `⏰ *Tiempo agotado*
 
-La frase era:
+🎯 Secuencia:
 
-"${frase}"`
-                    }
-                )
+${respuestaEsperada}`
+                }
+            )
 
-            },15000)
+        },20000)
 
         global.juegosActivos =
             global.juegosActivos || {}
@@ -118,19 +145,11 @@ La frase era:
             async(texto)=>{
 
                 texto =
-                    texto
-                    .trim()
-                    .toLowerCase()
-
-                const tiempo =
-                    (
-                        Date.now() -
-                        inicio
-                    ) / 1000
+                    texto.trim()
 
                 delete global
                 .juegosActivos[
-                `${jid}-${userJid}`
+                    `${jid}-${userJid}`
                 ]
 
                 clearTimeout(
@@ -139,7 +158,7 @@ La frase era:
 
                 if(
                     texto ===
-                    frase.toLowerCase()
+                    respuestaEsperada
                 ){
 
                     const victorias =
@@ -152,8 +171,8 @@ La frase era:
 
                     await darRecompensaJuego(
                         userJid,
-                        6,
-                        20
+                        7,
+                        22
                     )
 
                     await intentarDarEstrella(
@@ -169,11 +188,11 @@ La frase era:
                             text:
 `✅ *CORRECTO*
 
-⏱️ Tiempo:
-${tiempo.toFixed(2)}s
+🎯 Secuencia:
+${respuestaEsperada}
 
-✨ +6 XP
-💰 +20 monedas
+✨ +7 XP
+💰 +22 monedas
 🏆 Victorias: ${victorias}`
                         }
                     )
@@ -184,11 +203,11 @@ ${tiempo.toFixed(2)}s
                         jid,
                         {
                             text:
-`❌ *Texto incorrecto*
+`❌ *Incorrecto*
 
-La frase era:
+🎯 Secuencia:
 
-"${frase}"`
+${respuestaEsperada}`
                         }
                     )
                 }
@@ -196,8 +215,7 @@ La frase era:
                 return true
             }
         }
-
     }
 }
 
-export default speedtype
+export default memory

@@ -28,14 +28,19 @@ const menu4 = {
   ✦ *.dado* → lanza un dado
   ✦ *.suerte* → evento completamente aleatorio
   ✦ *.luck* → ¿ganarás o perderás?
+  ✦ *.coinflip* → Simula cara o sello con resultados aleatorios
+
+
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚔️ *JUEGOS COMPETITIVOS*
 
-  ✦ *.ppt @usuario* → piedra, papel o tijera
+  ✦ *.ppt piedra/papel/tijera* → piedra, papel o tijera
   ✦ *.duelo @usuario* → combate simbólico
   ✦ *.speedtype* → velocidad de escritura
+  ✦ *.memory* → Juego de memoria donde se deben recordar secuencias o patrones
+
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -43,6 +48,8 @@ const menu4 = {
 
   ✦ *.adivinanumero* → adivina el número
   ✦ *.riddle* → adivinanzas lógicas
+  ✦ *.riddle* → Adivinanzas lógicas con respuesta única
+  ✦ *.bandera* → Adivina el país por su bandera
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
