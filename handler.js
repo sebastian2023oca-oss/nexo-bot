@@ -313,38 +313,95 @@ global.juegosActivos[
 
 
 if(
+    juegoActivo &&
+    texto &&
+    !texto.startsWith(PREFIJO)
+) {
 
-juegoActivo&&
-juegoActivo.respuestaEspecial&&
-texto &&
-!texto.startsWith(
-PREFIJO
-)
+    // Juegos modernos
+    if (juegoActivo.respuestaEspecial) {
 
-){
+        try {
 
-try{
+            const terminado =
+                await juegoActivo.respuestaEspecial(
+                    texto,
+                    sock,
+                    mensaje
+                )
 
-const terminado=
-await juegoActivo
-.respuestaEspecial(
-texto,
-sock,
-mensaje
-)
+            if (terminado)
+                return
 
-if(
-terminado
-)return
+        } catch (err) {
 
-}catch(err){
+            console.log(
+                'Error juego:',
+                err
+            )
 
-console.log(
-'Error juego:',
-err
-)
+        }
 
-}
+    }
+
+    // Juegos clásicos
+    if (juegoActivo.respuesta) {
+
+        const respuestaUsuario =
+            texto
+                .toLowerCase()
+                .trim()
+
+        const respuestaCorrecta =
+            String(
+                juegoActivo.respuesta
+            )
+                .toLowerCase()
+                .trim()
+
+        if (
+            respuestaUsuario ===
+            respuestaCorrecta
+        ) {
+
+            if (
+                juegoActivo.timeout
+            ) {
+
+                clearTimeout(
+                    juegoActivo.timeout
+                )
+
+            }
+
+            delete global.juegosActivos[
+                `${jid}-${userJid}`
+            ]
+
+            try {
+
+                if (
+                    juegoActivo.recompensa
+                ) {
+
+                    await juegoActivo.recompensa()
+
+                }
+
+            } catch (err) {
+
+                console.log(
+                    'Error recompensa:',
+                    err
+                )
+
+            }
+
+        }
+
+        return
+
+    }
 
 }
 
