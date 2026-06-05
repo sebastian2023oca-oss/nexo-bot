@@ -1,10 +1,6 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown } from './utils.js'
-import {
-    intentarDarEstrella,
-    registrarVictoria,
-    darRecompensaJuego
-} from './juegosUtils.js'
+import { intentarDarEstrella, registrarVictoria, darRecompensaJuego } from './juegosUtils.js'
 
 const preguntas = [
     { p: '¿Cuál es el planeta más grande del sistema solar?', r: 'jupiter', pistas: ['Es un gigante gaseoso', 'Tiene la Gran Mancha Roja'] },
@@ -26,138 +22,70 @@ const preguntas = [
     { p: '¿Cuántas horas tiene un día?', r: '24', pistas: ['El doble de 12', 'Múltiplo de 8'] },
     { p: '¿Cuál es el idioma más hablado del mundo?', r: 'mandarin', pistas: ['Es asiático', 'De China'] },
     { p: '¿Cuántos metros tiene un kilómetro?', r: '1000', pistas: ['Cuatro cifras', 'El doble de 500'] },
-    { p: '¿Cuál es el elemento químico del oro?', r: 'au', pistas: ['Son dos letras', 'Del latín Aurum'] }
+    { p: '¿Cuál es el elemento químico del oro?', r: 'au', pistas: ['Son dos letras', 'Del latín Aurum'] },
 ]
+
+const sesionesActivas = new Map()
 
 const trivia = {
     async ejecutar(sock, mensaje) {
-
         const jid = mensaje.key.remoteJid
-        const userJid =
-            mensaje.key.participant ||
-            mensaje.key.remoteJid
+        const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const enCooldown =
-            await verificarCooldown(
-                userJid,
-                'trivia',
-                3
-            )
-
+        const enCooldown = await verificarCooldown(userJid, 'trivia', 3)
         if (enCooldown) {
-
-            await sock.sendMessage(
-                jid,
-                {
-                    text:
-`⏳ Espera *${enCooldown} minutos* para jugar otra vez.`
-                },
-                { quoted: mensaje }
-            )
-
+            await sock.sendMessage(jid, { text: `⏳ Espera *${enCooldown} minutos* para jugar de nuevo.` }, { quoted: mensaje })
             return
         }
 
-        const pregunta =
-            preguntas[
-                Math.floor(
-                    Math.random() *
-                    preguntas.length
-                )
-            ]
+        if (sesionesActivas.has(userJid)) {
+            await sock.sendMessage(jid, { text: `⚠️ Ya tienes una partida activa.` }, { quoted: mensaje })
+            return
+        }
 
-        await registrarCooldown(
-            userJid,
-            'trivia',
-            3
-        )
+        const pregunta = preguntas[Math.floor(Math.random() * preguntas.length)]
+        sesionesActivas.set(userJid, true)
+        await registrarCooldown(userJid, 'trivia', 3)
 
-        await sock.sendMessage(
-            jid,
-            {
-                text:
-`🧠 *TRIVIA*
+        await sock.sendMessage(jid, {
+            text: `🧠 *TRIVIA*\n\n❓ ${pregunta.p}\n\n💡 *Pista:* ${pregunta.pistas[0]}\n\nResponde en el chat. Tienes *30 segundos*.`
+        }, { quoted: mensaje })
 
-❓ ${pregunta.p}
+        let respondio = false
 
-💡 Pista:
-${pregunta.pistas[0]}
+        const timeout = setTimeout(async () => {
+            if (!respondio) {
+                respondio = true
+                sesionesActivas.delete(userJid)
+                await sock.sendMessage(jid, { text: `⏰ *¡Tiempo agotado!*\n\nLa respuesta era: *${pregunta.r}*` }, { quoted: mensaje })
+            }
+        }, 30000)
 
-Responde en el chat.
-Tienes *30 segundos*.`
-            },
-            { quoted: mensaje }
-        )
+        const listener = async ({ messages }) => {
+            if (respondio) return
+            for (const m of messages) {
+                if (respondio) break
+                const autor = m.key.participant || m.key.remoteJid
+                if (autor !== userJid || m.key.remoteJid !== jid) continue
+                const texto = (m.message?.conversation || m.message?.extendedTextMessage?.text || '').toLowerCase().trim()
+                if (!texto) continue
 
-        const timeout =
-            setTimeout(async()=>{
-
-                delete global.juegosActivos[
-                    `${jid}-${userJid}`
-                ]
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`⏰ *Tiempo agotado*
-
-🎯 Respuesta:
-*${pregunta.r}*`
-                    }
-                )
-
-            },30000)
-
-        global.juegosActivos =
-            global.juegosActivos || {}
-
-        global.juegosActivos[
-            `${jid}-${userJid}`
-        ] = {
-
-            respuesta:
-                pregunta.r
-                .toLowerCase()
-                .trim(),
-
-            timeout,
-
-            recompensa: async()=>{
-
-                const victorias =
-                    await registrarVictoria(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                await darRecompensaJuego(
-                    userJid,
-                    5,
-                    15
-                )
-
-                await intentarDarEstrella(
-                    userJid,
-                    sock,
-                    jid,
-                    mensaje
-                )
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`✨ +5 XP
-💰 +15 monedas
-🏆 Victorias: ${victorias}`
-                    }
-                )
+                if (texto === pregunta.r) {
+                    respondio = true
+                    clearTimeout(timeout)
+                    sesionesActivas.delete(userJid)
+                    sock.ev.off('messages.upsert', listener)
+                    const victorias = await registrarVictoria(userJid, sock, jid, mensaje)
+                    await darRecompensaJuego(userJid, 5, 15)
+                    await intentarDarEstrella(userJid, sock, jid, mensaje)
+                    await sock.sendMessage(jid, {
+                        text: `✅ *¡CORRECTO!*\n\n🎯 Respuesta: *${pregunta.r}*\n✨ *+5 XP* | 💰 *+15 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                    }, { quoted: m })
+                }
             }
         }
 
+        sock.ev.on('messages.upsert', listener)
     }
 }
 

@@ -1,202 +1,83 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown } from './utils.js'
-import {
-    intentarDarEstrella,
-    registrarVictoria,
-    darRecompensaJuego
-} from './juegosUtils.js'
+import { intentarDarEstrella, registrarVictoria, darRecompensaJuego } from './juegosUtils.js'
 
 const frases = [
-    'el cielo es azul',
-    'hola mundo desde el bot',
-    'velocidad maxima',
-    'jugando con el bot',
-    'nexo bot es epico',
-    'teclea rapido ahora',
-    'la vida es bella',
-    'coding es divertido',
-    'aprendiendo cada dia',
-    'el tiempo vuela rapido',
-    'juega y gana monedas',
-    'sigue intentando siempre'
+    'el cielo es azul', 'hola mundo desde el bot', 'velocidad maxima',
+    'jugando con el bot', 'nexo bot es epico', 'teclea rapido ahora',
+    'la vida es bella', 'coding es divertido', 'aprendiendo cada dia',
+    'el tiempo vuela rapido', 'juega y gana monedas', 'sigue intentando siempre',
 ]
+
+const sesionesActivas = new Map()
 
 const speedtype = {
     async ejecutar(sock, mensaje) {
+        const jid = mensaje.key.remoteJid
+        const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const jid =
-            mensaje.key.remoteJid
-
-        const userJid =
-            mensaje.key.participant ||
-            mensaje.key.remoteJid
-
-        const enCooldown =
-            await verificarCooldown(
-                userJid,
-                'speedtype',
-                3
-            )
-
+        const enCooldown = await verificarCooldown(userJid, 'speedtype', 3)
         if (enCooldown) {
-
-            await sock.sendMessage(
-                jid,
-                {
-                    text:
-`⏳ Espera *${enCooldown} minutos* para jugar otra vez.`
-                },
-                { quoted: mensaje }
-            )
-
+            await sock.sendMessage(jid, { text: `⏳ Espera *${enCooldown} minutos* para jugar de nuevo.` }, { quoted: mensaje })
             return
         }
 
-        const frase =
-            frases[
-                Math.floor(
-                    Math.random() *
-                    frases.length
-                )
-            ]
+        if (sesionesActivas.has(userJid)) {
+            await sock.sendMessage(jid, { text: `⚠️ Ya tienes una partida activa.` }, { quoted: mensaje })
+            return
+        }
 
-        const inicio =
-            Date.now()
+        const frase = frases[Math.floor(Math.random() * frases.length)]
+        const inicio = Date.now()
+        sesionesActivas.set(userJid, true)
+        await registrarCooldown(userJid, 'speedtype', 3)
 
-        await registrarCooldown(
-            userJid,
-            'speedtype',
-            3
-        )
+        await sock.sendMessage(jid, {
+            text: `⌨️ *VELOCIDAD DE ESCRITURA*\n\nEscribe exactamente:\n\n*"${frase}"*\n\nTienes *15 segundos*. ¡Ya!`
+        }, { quoted: mensaje })
 
-        await sock.sendMessage(
-            jid,
-            {
-                text:
-`⌨️ *VELOCIDAD DE ESCRITURA*
+        let respondio = false
 
-Escribe exactamente:
+        const timeout = setTimeout(async () => {
+            if (!respondio) {
+                respondio = true
+                sesionesActivas.delete(userJid)
+                await sock.sendMessage(jid, { text: `⏰ *¡Tiempo agotado!*\n\nLa frase era: *"${frase}"*` }, { quoted: mensaje })
+            }
+        }, 15000)
 
-"${frase}"
+        const listener = async ({ messages }) => {
+            if (respondio) return
+            for (const m of messages) {
+                if (respondio) break
+                const autor = m.key.participant || m.key.remoteJid
+                if (autor !== userJid || m.key.remoteJid !== jid) continue
+                const texto = (m.message?.conversation || m.message?.extendedTextMessage?.text || '').trim().toLowerCase()
+                if (!texto) continue
 
-Tienes *15 segundos*.`
-            },
-            { quoted: mensaje }
-        )
+                respondio = true
+                clearTimeout(timeout)
+                sesionesActivas.delete(userJid)
+                sock.ev.off('messages.upsert', listener)
 
-        const timeout =
-            setTimeout(async()=>{
+                const tiempo = (Date.now() - inicio) / 1000
 
-                delete global.juegosActivos[
-                    `${jid}-${userJid}`
-                ]
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`⏰ *Tiempo agotado*
-
-La frase era:
-
-"${frase}"`
-                    }
-                )
-
-            },15000)
-
-        global.juegosActivos =
-            global.juegosActivos || {}
-
-        global.juegosActivos[
-            `${jid}-${userJid}`
-        ] = {
-
-            timeout,
-
-            respuestaEspecial:
-            async(texto)=>{
-
-                texto =
-                    texto
-                    .trim()
-                    .toLowerCase()
-
-                const tiempo =
-                    (
-                        Date.now() -
-                        inicio
-                    ) / 1000
-
-                delete global
-                .juegosActivos[
-                `${jid}-${userJid}`
-                ]
-
-                clearTimeout(
-                    timeout
-                )
-
-                if(
-                    texto ===
-                    frase.toLowerCase()
-                ){
-
-                    const victorias =
-                    await registrarVictoria(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                    await darRecompensaJuego(
-                        userJid,
-                        6,
-                        20
-                    )
-
-                    await intentarDarEstrella(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                    await sock.sendMessage(
-                        jid,
-                        {
-                            text:
-`✅ *CORRECTO*
-
-⏱️ Tiempo:
-${tiempo.toFixed(2)}s
-
-✨ +6 XP
-💰 +20 monedas
-🏆 Victorias: ${victorias}`
-                        }
-                    )
-
+                if (texto === frase && tiempo <= 15) {
+                    const victorias = await registrarVictoria(userJid, sock, jid, mensaje)
+                    await darRecompensaJuego(userJid, 6, 20)
+                    await intentarDarEstrella(userJid, sock, jid, mensaje)
+                    await sock.sendMessage(jid, {
+                        text: `✅ *¡CORRECTO!*\n\n⏱️ Tiempo: *${tiempo.toFixed(2)}s*\n✨ *+6 XP* | 💰 *+20 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                    }, { quoted: m })
                 } else {
-
-                    await sock.sendMessage(
-                        jid,
-                        {
-                            text:
-`❌ *Texto incorrecto*
-
-La frase era:
-
-"${frase}"`
-                        }
-                    )
+                    await sock.sendMessage(jid, {
+                        text: `❌ *Texto incorrecto.*\n\nLa frase era: *"${frase}"*`
+                    }, { quoted: m })
                 }
-
-                return true
             }
         }
 
+        sock.ev.on('messages.upsert', listener)
     }
 }
 

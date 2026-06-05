@@ -1,10 +1,6 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown } from './utils.js'
-import {
-    intentarDarEstrella,
-    registrarVictoria,
-    darRecompensaJuego
-} from './juegosUtils.js'
+import { intentarDarEstrella, registrarVictoria, darRecompensaJuego } from './juegosUtils.js'
 
 const palabras = [
     { palabra: 'elefante', pista: 'Animal grande con trompa' },
@@ -16,158 +12,73 @@ const palabras = [
     { palabra: 'dinosaurio', pista: 'Animal prehistórico extinto' },
     { palabra: 'chocolate', pista: 'Dulce hecho de cacao' },
     { palabra: 'submarino', pista: 'Vehículo que navega bajo el agua' },
-    { palabra: 'piramide', pista: 'Construcción egipcia antigua' }
+    { palabra: 'piramide', pista: 'Construcción egipcia antigua' },
 ]
 
 function ocultarPalabra(palabra) {
-    return palabra
-        .split('')
-        .map((l, i) =>
-            i === 0 || i === palabra.length - 1
-                ? l
-                : '_'
-        )
-        .join(' ')
+    return palabra.split('').map((l, i) => i === 0 || i === palabra.length - 1 ? l : '_').join(' ')
 }
+
+const sesionesActivas = new Map()
 
 const adivina = {
     async ejecutar(sock, mensaje) {
+        const jid = mensaje.key.remoteJid
+        const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const jid =
-            mensaje.key.remoteJid
-
-        const userJid =
-            mensaje.key.participant ||
-            mensaje.key.remoteJid
-
-        const enCooldown =
-            await verificarCooldown(
-                userJid,
-                'adivina',
-                3
-            )
-
+        const enCooldown = await verificarCooldown(userJid, 'adivina', 3)
         if (enCooldown) {
-
-            await sock.sendMessage(
-                jid,
-                {
-                    text:
-`⏳ Espera *${enCooldown} minutos* para jugar otra vez.`
-                },
-                { quoted: mensaje }
-            )
-
+            await sock.sendMessage(jid, { text: `⏳ Espera *${enCooldown} minutos* para jugar de nuevo.` }, { quoted: mensaje })
             return
         }
 
-        const w =
-            palabras[
-                Math.floor(
-                    Math.random() *
-                    palabras.length
-                )
-            ]
+        if (sesionesActivas.has(userJid)) {
+            await sock.sendMessage(jid, { text: `⚠️ Ya tienes una partida activa.` }, { quoted: mensaje })
+            return
+        }
 
-        const oculta =
-            ocultarPalabra(
-                w.palabra
-            )
+        const w = palabras[Math.floor(Math.random() * palabras.length)]
+        const oculta = ocultarPalabra(w.palabra)
+        sesionesActivas.set(userJid, true)
+        await registrarCooldown(userJid, 'adivina', 3)
 
-        await registrarCooldown(
-            userJid,
-            'adivina',
-            3
-        )
+        await sock.sendMessage(jid, {
+            text: `🔡 *ADIVINA LA PALABRA*\n\n💡 Pista: *${w.pista}*\n\n🔤 Palabra: *${oculta}*\n(${w.palabra.length} letras)\n\nTienes *30 segundos*.`
+        }, { quoted: mensaje })
 
-        await sock.sendMessage(
-            jid,
-            {
-                text:
-`🔡 *ADIVINA LA PALABRA*
+        let respondio = false
 
-💡 Pista:
-*${w.pista}*
+        const timeout = setTimeout(async () => {
+            if (!respondio) {
+                respondio = true
+                sesionesActivas.delete(userJid)
+                await sock.sendMessage(jid, { text: `⏰ *¡Tiempo agotado!*\n\nLa palabra era: *${w.palabra}*` }, { quoted: mensaje })
+            }
+        }, 30000)
 
-🔤 Palabra:
-*${oculta}*
+        const listener = async ({ messages }) => {
+            if (respondio) return
+            for (const m of messages) {
+                if (respondio) break
+                const autor = m.key.participant || m.key.remoteJid
+                if (autor !== userJid || m.key.remoteJid !== jid) continue
+                const texto = (m.message?.conversation || m.message?.extendedTextMessage?.text || '').toLowerCase().trim()
+                if (texto !== w.palabra) continue
 
-(${w.palabra.length} letras)
-
-Tienes *30 segundos*.`
-            },
-            { quoted: mensaje }
-        )
-
-        const timeout =
-            setTimeout(async()=>{
-
-                delete global.juegosActivos[
-                    `${jid}-${userJid}`
-                ]
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`⏰ *Tiempo agotado*
-
-🎯 La palabra era:
-*${w.palabra}*`
-                    }
-                )
-
-            },30000)
-
-        global.juegosActivos =
-            global.juegosActivos || {}
-
-        global.juegosActivos[
-            `${jid}-${userJid}`
-        ] = {
-
-            respuesta:
-                w.palabra
-                .toLowerCase()
-                .trim(),
-
-            timeout,
-
-            recompensa: async()=>{
-
-                const victorias =
-                    await registrarVictoria(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                await darRecompensaJuego(
-                    userJid,
-                    5,
-                    15
-                )
-
-                await intentarDarEstrella(
-                    userJid,
-                    sock,
-                    jid,
-                    mensaje
-                )
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`✨ +5 XP
-💰 +15 monedas
-🏆 Victorias: ${victorias}`
-                    }
-                )
+                respondio = true
+                clearTimeout(timeout)
+                sesionesActivas.delete(userJid)
+                sock.ev.off('messages.upsert', listener)
+                const victorias = await registrarVictoria(userJid, sock, jid, mensaje)
+                await darRecompensaJuego(userJid, 5, 15)
+                await intentarDarEstrella(userJid, sock, jid, mensaje)
+                await sock.sendMessage(jid, {
+                    text: `✅ *¡CORRECTO!*\n\n🎯 La palabra era: *${w.palabra}*\n✨ *+5 XP* | 💰 *+15 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                }, { quoted: m })
             }
         }
 
+        sock.ev.on('messages.upsert', listener)
     }
 }
 

@@ -1,193 +1,76 @@
 import db from './db.js'
 import { verificarCooldown, registrarCooldown } from './utils.js'
-import {
-    intentarDarEstrella,
-    registrarVictoria,
-    darRecompensaJuego
-} from './juegosUtils.js'
+import { intentarDarEstrella, registrarVictoria, darRecompensaJuego } from './juegosUtils.js'
+
+const sesionesActivas = new Map()
 
 const adivinanumero = {
     async ejecutar(sock, mensaje) {
+        const jid = mensaje.key.remoteJid
+        const userJid = mensaje.key.participant || mensaje.key.remoteJid
 
-        const jid =
-            mensaje.key.remoteJid
-
-        const userJid =
-            mensaje.key.participant ||
-            mensaje.key.remoteJid
-
-        const enCooldown =
-            await verificarCooldown(
-                userJid,
-                'adivinanumero',
-                3
-            )
-
+        const enCooldown = await verificarCooldown(userJid, 'adivinanumero', 3)
         if (enCooldown) {
-
-            await sock.sendMessage(
-                jid,
-                {
-                    text:
-`⏳ Espera *${enCooldown} minutos* para jugar otra vez.`
-                },
-                { quoted: mensaje }
-            )
-
+            await sock.sendMessage(jid, { text: `⏳ Espera *${enCooldown} minutos* para jugar de nuevo.` }, { quoted: mensaje })
             return
         }
 
-        const numero =
-            Math.floor(
-                Math.random() * 20
-            ) + 1
+        if (sesionesActivas.has(userJid)) {
+            await sock.sendMessage(jid, { text: `⚠️ Ya tienes una partida activa.` }, { quoted: mensaje })
+            return
+        }
 
+        const numero = Math.floor(Math.random() * 20) + 1
         let intentos = 0
-
         const maxIntentos = 5
+        sesionesActivas.set(userJid, true)
+        await registrarCooldown(userJid, 'adivinanumero', 3)
 
-        await registrarCooldown(
-            userJid,
-            'adivinanumero',
-            3
-        )
+        await sock.sendMessage(jid, {
+            text: `🔢 *ADIVINA EL NÚMERO*\n\nPienso en un número del *1 al 20*.\nTienes *${maxIntentos} intentos*.\n\n¡Empieza!`
+        }, { quoted: mensaje })
 
-        await sock.sendMessage(
-            jid,
-            {
-                text:
-`🔢 *ADIVINA EL NÚMERO*
+        let terminado = false
 
-Pienso en un número
-del *1 al 20*
-
-🎯 Intentos:
-${maxIntentos}
-
-¡Empieza!`
-            },
-            { quoted: mensaje }
-        )
-
-        global.juegosActivos =
-            global.juegosActivos || {}
-
-        global.juegosActivos[
-            `${jid}-${userJid}`
-        ] = {
-
-            timeout: null,
-
-            respuestaEspecial:
-            async(texto)=>{
-
-                const num =
-                    parseInt(
-                        texto.trim()
-                    )
-
-                if(
-                    isNaN(num)
-                ) return false
+        const listener = async ({ messages }) => {
+            if (terminado) return
+            for (const m of messages) {
+                if (terminado) break
+                const autor = m.key.participant || m.key.remoteJid
+                if (autor !== userJid || m.key.remoteJid !== jid) continue
+                const texto = (m.message?.conversation || m.message?.extendedTextMessage?.text || '').trim()
+                const num = parseInt(texto)
+                if (isNaN(num)) continue
 
                 intentos++
 
-                if(
-                    num === numero
-                ){
-
-                    delete global
-                    .juegosActivos[
-                    `${jid}-${userJid}`
-                    ]
-
-                    const victorias =
-                    await registrarVictoria(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                    await darRecompensaJuego(
-                        userJid,
-                        6,
-                        20
-                    )
-
-                    await intentarDarEstrella(
-                        userJid,
-                        sock,
-                        jid,
-                        mensaje
-                    )
-
-                    await sock.sendMessage(
-                        jid,
-                        {
-                            text:
-`✅ *CORRECTO*
-
-🎯 Número:
-${numero}
-
-📊 Intentos:
-${intentos}
-
-✨ +6 XP
-💰 +20 monedas
-🏆 Victorias: ${victorias}`
-                        }
-                    )
-
-                    return true
+                if (num === numero) {
+                    terminado = true
+                    sesionesActivas.delete(userJid)
+                    sock.ev.off('messages.upsert', listener)
+                    const victorias = await registrarVictoria(userJid, sock, jid, mensaje)
+                    await darRecompensaJuego(userJid, 6, 20)
+                    await intentarDarEstrella(userJid, sock, jid, mensaje)
+                    await sock.sendMessage(jid, {
+                        text: `✅ *¡CORRECTO!*\n\nEl número era *${numero}* en *${intentos} intento${intentos > 1 ? 's' : ''}*!\n✨ *+6 XP* | 💰 *+20 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                    }, { quoted: m })
+                } else if (intentos >= maxIntentos) {
+                    terminado = true
+                    sesionesActivas.delete(userJid)
+                    sock.ev.off('messages.upsert', listener)
+                    await sock.sendMessage(jid, {
+                        text: `❌ *¡Sin intentos!*\n\nEl número era *${numero}*.`
+                    }, { quoted: m })
+                } else {
+                    const pista = num < numero ? '📈 Es mayor' : '📉 Es menor'
+                    await sock.sendMessage(jid, {
+                        text: `${pista}. Te quedan *${maxIntentos - intentos} intentos*.`
+                    }, { quoted: m })
                 }
-
-                if(
-                    intentos >=
-                    maxIntentos
-                ){
-
-                    delete global
-                    .juegosActivos[
-                    `${jid}-${userJid}`
-                    ]
-
-                    await sock.sendMessage(
-                        jid,
-                        {
-                            text:
-`❌ *Sin intentos*
-
-El número era:
-
-*${numero}*`
-                        }
-                    )
-
-                    return true
-                }
-
-                const pista =
-                    num < numero
-                    ? '📈 Es mayor'
-                    : '📉 Es menor'
-
-                await sock.sendMessage(
-                    jid,
-                    {
-                        text:
-`${pista}
-
-Intentos restantes:
-${maxIntentos - intentos}`
-                    }
-                )
-
-                return true
             }
         }
 
+        sock.ev.on('messages.upsert', listener)
     }
 }
 
