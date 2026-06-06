@@ -41,7 +41,15 @@ const equipar = {
             return
         }
 
-        await db.execute('UPDATE inventario_usuario SET equipado = 1 WHERE jid = ? AND item = ?', [userJid, itemKey])
+await db.execute('UPDATE inventario_usuario SET equipado = 1 WHERE jid = ? AND item = ?', [userJid, itemKey])
+
+if (itemKey === 'capa_sigilo') {
+    const expira = new Date(Date.now() + 12 * 3600000)
+    await db.execute(
+        'INSERT INTO items_activos (jid, item, expira) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE expira = ?',
+        [userJid, 'capa_sigilo', expira, expira]
+    )
+}
 
         await sock.sendMessage(jid, {
             text: `⚡ *ÍTEM EQUIPADO*\n\n✅ Equipaste *${itemKey}* correctamente.\n\nSus beneficios están activos.\n\n📊 *Equipados:* ${(equipados[0].total || 0) + 1}/${MAX_EQUIPADOS}`

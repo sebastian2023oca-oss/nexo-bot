@@ -51,7 +51,7 @@ const robar_item = {
 
         // Verificar capa_sigilo de la víctima → -50% probabilidad de robo
         const [capa] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "capa_sigilo" AND equipado = 1',
+            'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()',
             [mencionado]
         )
 

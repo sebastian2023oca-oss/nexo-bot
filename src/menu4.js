@@ -47,7 +47,6 @@ const menu4 = {
 🧠 *JUEGOS DE LÓGICA*
 
   ✦ *.adivinanumero* → adivina el número
-  ✦ *.riddle* → adivinanzas lógicas
   ✦ *.riddle* → Adivinanzas lógicas con respuesta única
   ✦ *.bandera* → Adivina el país por su bandera
 
