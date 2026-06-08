@@ -1,5 +1,5 @@
 {
-  "name": "Nexo-Bot",
+  "name": "nexo-bot",
   "version": "1.0.0",
   "description": "Bot de WhatsApp con Baileys",
   "main": "index.js",
@@ -10,9 +10,13 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.5",
+    "axios": "^1.17.0",
     "mysql2": "^3.22.3",
     "pino": "^8.19.0",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
