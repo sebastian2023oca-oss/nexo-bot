@@ -15,9 +15,7 @@ const robar_item = {
         const mencionado = mensaje.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
 
         if (!mencionado) {
-            await sock.sendMessage(jid, {
-                text: `❌ Debes mencionar a un usuario.\n\n📌 Ejemplo: *.robar_item @usuario*`
-            }, { quoted: mensaje })
+            await sock.sendMessage(jid, { text: `❌ Debes mencionar a un usuario.\n\n📌 Ejemplo: *.robar_item @usuario*` }, { quoted: mensaje })
             return
         }
 
@@ -29,33 +27,30 @@ const robar_item = {
         const [robador] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [userJid])
         const [victima] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [mencionado])
 
-        if (robador.length === 0) {
-            await sock.sendMessage(jid, { text: `❌ No estás registrado en el bot.` }, { quoted: mensaje })
-            return
-        }
-        if (victima.length === 0) {
-            await sock.sendMessage(jid, { text: `❌ Ese usuario no está registrado.` }, { quoted: mensaje })
-            return
-        }
+        if (robador.length === 0) { await sock.sendMessage(jid, { text: `❌ No estás registrado en el bot.` }, { quoted: mensaje }); return }
+        if (victima.length === 0) { await sock.sendMessage(jid, { text: `❌ Ese usuario no está registrado.` }, { quoted: mensaje }); return }
 
-        // Solo ítems del inventario principal (no bodega)
-        const [itemsVictima] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ?',
-            [mencionado]
-        )
+        const [itemsVictima] = await db.execute('SELECT * FROM inventario_usuario WHERE jid = ?', [mencionado])
 
         if (itemsVictima.length === 0) {
             await sock.sendMessage(jid, { text: `❌ Esa persona no tiene ítems en su inventario.` }, { quoted: mensaje })
             return
         }
 
-        // Verificar capa_sigilo de la víctima → -50% probabilidad de robo
+        // Verificar capa_sigilo en items_activos (con nivel de mejora)
         const [capa] = await db.execute(
-            'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()',
-            [mencionado]
+            'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()', [mencionado]
         )
 
-        const probabilidad = capa.length > 0 ? 0.2 : 0.4
+        let probabilidad = 0.4
+        if (capa.length > 0) {
+            const [invCapa] = await db.execute(
+                'SELECT COALESCE(nivel_mejora, 0) as nivel_mejora FROM inventario_usuario WHERE jid = ? AND item = "capa_sigilo"',
+                [mencionado]
+            )
+            const nivel = invCapa[0]?.nivel_mejora || 0
+            probabilidad = Math.max(0.02, 0.20 - (nivel * 0.02))
+        }
 
         await registrarCooldown(userJid, 'robar_item', 60)
 
@@ -67,20 +62,15 @@ const robar_item = {
             return
         }
 
-        // Elegir ítem aleatorio (no puede ser de bodega)
         const itemRobado = itemsVictima[Math.floor(Math.random() * itemsVictima.length)]
 
-        // Quitar de la víctima
         if (itemRobado.cantidad <= 1) {
             await db.execute('DELETE FROM inventario_usuario WHERE jid = ? AND item = ?', [mencionado, itemRobado.item])
         } else {
             await db.execute('UPDATE inventario_usuario SET cantidad = cantidad - 1 WHERE jid = ? AND item = ?', [mencionado, itemRobado.item])
         }
 
-        // Dar al robador
-        const [yaExiste] = await db.execute(
-            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = ?', [userJid, itemRobado.item]
-        )
+        const [yaExiste] = await db.execute('SELECT * FROM inventario_usuario WHERE jid = ? AND item = ?', [userJid, itemRobado.item])
         if (yaExiste.length > 0) {
             await db.execute('UPDATE inventario_usuario SET cantidad = cantidad + 1 WHERE jid = ? AND item = ?', [userJid, itemRobado.item])
         } else {

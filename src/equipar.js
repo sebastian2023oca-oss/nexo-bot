@@ -29,6 +29,22 @@ const equipar = {
             return
         }
 
+        // Verificar cooldown de capa_sigilo
+        if (itemKey === 'capa_sigilo') {
+            const [cd] = await db.execute(
+                'SELECT expira FROM cooldowns WHERE jid = ? AND tipo = "equipar_capa_sigilo" AND expira > NOW()',
+                [userJid]
+            )
+            if (cd.length > 0) {
+                const diff = new Date(cd[0].expira) - Date.now()
+                const mins = Math.ceil(diff / 60000)
+                await sock.sendMessage(jid, {
+                    text: `⏳ Debes esperar *${mins} minutos* para volver a equipar la *Capa de Sigilo*.`
+                }, { quoted: mensaje })
+                return
+            }
+        }
+
         // Verificar límite de 5 equipados
         const [equipados] = await db.execute(
             'SELECT COUNT(*) as total FROM inventario_usuario WHERE jid = ? AND equipado = 1',
@@ -41,18 +57,19 @@ const equipar = {
             return
         }
 
-await db.execute('UPDATE inventario_usuario SET equipado = 1 WHERE jid = ? AND item = ?', [userJid, itemKey])
+        await db.execute('UPDATE inventario_usuario SET equipado = 1 WHERE jid = ? AND item = ?', [userJid, itemKey])
 
-if (itemKey === 'capa_sigilo') {
-    const expira = new Date(Date.now() + 12 * 3600000)
-    await db.execute(
-        'INSERT INTO items_activos (jid, item, expira) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE expira = ?',
-        [userJid, 'capa_sigilo', expira, expira]
-    )
-}
+        // Registrar duración de 12h en items_activos para capa_sigilo
+        if (itemKey === 'capa_sigilo') {
+            const expira = new Date(Date.now() + 12 * 3600000)
+            await db.execute(
+                'INSERT INTO items_activos (jid, item, expira) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE expira = ?',
+                [userJid, 'capa_sigilo', expira, expira]
+            )
+        }
 
         await sock.sendMessage(jid, {
-            text: `⚡ *ÍTEM EQUIPADO*\n\n✅ Equipaste *${itemKey}* correctamente.\n\nSus beneficios están activos.\n\n📊 *Equipados:* ${(equipados[0].total || 0) + 1}/${MAX_EQUIPADOS}`
+            text: `⚡ *ÍTEM EQUIPADO*\n\n✅ Equipaste *${itemKey}* correctamente.\n\nSus beneficios están activos.${itemKey === 'capa_sigilo' ? '\n\n🧥 La capa durará *12 horas* activa.\n⚠️ Si envías una imagen, sticker o video se desequipará.' : ''}\n\n📊 *Equipados:* ${(equipados[0].total || 0) + 1}/${MAX_EQUIPADOS}`
         }, { quoted: mensaje })
     }
 }

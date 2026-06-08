@@ -24,6 +24,19 @@ const desequipar = {
 
         await db.execute('UPDATE inventario_usuario SET equipado = 0 WHERE jid = ? AND item = ?', [userJid, itemKey])
 
+        // Capa sigilo: limpiar items_activos y poner cooldown
+        if (itemKey === 'capa_sigilo') {
+            await db.execute('DELETE FROM items_activos WHERE jid = ? AND item = "capa_sigilo"', [userJid])
+            await db.execute(
+                'INSERT INTO cooldowns (jid, tipo, expira) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE)) ON DUPLICATE KEY UPDATE expira = DATE_ADD(NOW(), INTERVAL 15 MINUTE)',
+                [userJid, 'equipar_capa_sigilo']
+            )
+            await sock.sendMessage(jid, {
+                text: `✅ *capa_sigilo* desequipada.\n\n⏳ Cooldown de *15 minutos* para volver a equiparla.`
+            }, { quoted: mensaje })
+            return
+        }
+
         await sock.sendMessage(jid, {
             text: `✅ *${itemKey}* desequipado correctamente.`
         }, { quoted: mensaje })

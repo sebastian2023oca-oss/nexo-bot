@@ -44,11 +44,20 @@ const robar = {
             return
         }
 
-        // Verificar capa_sigilo → -50% probabilidad de robo exitoso
+        // Verificar capa_sigilo en items_activos (con nivel de mejora)
         const [capa] = await db.execute(
             'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()', [mencionado]
         )
-        const probabilidad = capa.length > 0 ? 0.2 : 0.4
+
+        let probabilidad = 0.4
+        if (capa.length > 0) {
+            const [invCapa] = await db.execute(
+                'SELECT COALESCE(nivel_mejora, 0) as nivel_mejora FROM inventario_usuario WHERE jid = ? AND item = "capa_sigilo"',
+                [mencionado]
+            )
+            const nivel = invCapa[0]?.nivel_mejora || 0
+            probabilidad = Math.max(0.02, 0.20 - (nivel * 0.02))
+        }
 
         await registrarCooldown(userJid, 'robar', 15)
 
