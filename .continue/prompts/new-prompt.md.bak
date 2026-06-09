@@ -1,0 +1,163 @@
+# Instrucciones para trabajar con Nexo-Bot
+
+## Contexto General
+
+Antes de responder, considera siempre que:
+
+* El proyecto es **Nexo-Bot**.
+* El entorno de producción es una **VPS Linux**.
+* La base de datos utilizada es **SQL**.
+* El código se desarrolla principalmente en **VS Code**.
+* Se busca estabilidad, escalabilidad, rendimiento y facilidad de mantenimiento a largo plazo.
+* No se deben asumir datos o estructuras sin evidencia del código analizado.
+
+---
+
+## Base de Datos
+
+* Nexo-Bot utiliza exclusivamente **SQL** como sistema de almacenamiento de datos.
+* Asume siempre que toda la información se almacena en SQL.
+* No sugieras MongoDB, Firebase, Supabase, Redis, SQLite, archivos JSON, PostgreSQL en modo NoSQL ni otros sistemas de almacenamiento, salvo que se solicite explícitamente.
+* Todas las consultas, optimizaciones, diagnósticos y correcciones deben orientarse a SQL.
+* Cuando exista un problema relacionado con datos, analiza primero:
+
+  * Tablas involucradas.
+  * Relaciones entre tablas.
+  * Índices existentes.
+  * Consultas SQL ejecutadas.
+  * Impacto en rendimiento.
+
+Si propones cambios en la base de datos, explica siempre:
+
+1. Qué tabla será afectada.
+2. Qué columnas están involucradas.
+3. Qué consulta debe modificarse.
+4. El motivo del cambio.
+5. El impacto en rendimiento, compatibilidad y mantenimiento.
+
+---
+
+## Entorno del Servidor
+
+* Asume siempre que Nexo-Bot se ejecuta en una VPS Linux.
+* Todas las recomendaciones deben ser compatibles con dicho entorno.
+* No sugieras XAMPP, Localhost, Laragon, WAMP, MAMP ni otros entornos locales, salvo que se solicite expresamente.
+* Al analizar errores, despliegues o configuraciones, prioriza soluciones orientadas a producción.
+
+---
+
+## Flujo de Trabajo
+
+* El código se modifica principalmente desde VS Code.
+* Los cambios deben explicarse para ser realizados en VS Code.
+* Evita indicar modificaciones manuales directamente en la VPS mediante nano, vim u otros editores de terminal, excepto cuando sea estrictamente necesario.
+* Prioriza siempre un flujo de trabajo limpio, mantenible y fácil de replicar.
+* Después de cada modificación, explica cómo desplegar el cambio utilizando el flujo habitual del proyecto.
+
+---
+
+## Modificaciones de Código
+
+Cuando propongas cambios:
+
+* Indica siempre el archivo exacto que debe abrirse en VS Code.
+* Explica qué bloque, función o línea debe localizarse.
+* Explica exactamente qué debe modificarse.
+* Justifica técnicamente el motivo del cambio.
+* Describe el impacto esperado.
+* Evita modificaciones innecesarias o especulativas.
+
+Ejemplo:
+
+Archivo:
+handlers/economia.js
+
+Buscar:
+
+const limite = 100
+
+Reemplazar por:
+
+const limite = 500
+
+Explicación:
+Aumenta el límite máximo permitido por el sistema de economía.
+
+---
+
+## Diagnóstico de Errores
+
+Antes de sugerir cualquier solución:
+
+1. Analiza la causa raíz.
+2. Explica por qué ocurre el problema.
+3. Identifica los archivos involucrados.
+4. Evalúa el impacto de la corrección.
+5. Evita cambios que no estén relacionados con el error.
+6. No propongas soluciones sin evidencia suficiente.
+
+Piensa como un desarrollador senior responsable del mantenimiento de Nexo-Bot a largo plazo.
+
+---
+
+## Calidad de las Respuestas
+
+* Prioriza soluciones estables y mantenibles.
+* Evita soluciones rápidas que puedan generar problemas futuros.
+* Si existen varias alternativas, compara ventajas y desventajas.
+* Explica las consecuencias de cada decisión técnica.
+* Considera siempre la escalabilidad futura del proyecto.
+
+---
+
+## Formato Obligatorio de Respuesta
+
+Cuando se recomiende una modificación o corrección, utiliza siempre esta estructura:
+
+### 1. Problema detectado
+
+Descripción clara del problema.
+
+### 2. Causa probable
+
+Explicación técnica del origen.
+
+### 3. Archivo afectado
+
+Ruta exacta del archivo involucrado.
+
+### 4. Cambio a realizar en VS Code
+
+Qué buscar, qué modificar y qué reemplazar.
+
+### 5. Explicación técnica
+
+Por qué el cambio resuelve el problema.
+
+### 6. Riesgos o efectos secundarios
+
+Posibles consecuencias del cambio.
+
+### 7. Cómo verificar que quedó solucionado
+
+Pasos concretos para validar el resultado.
+
+---
+
+## Regla Fundamental
+
+No proponer cambios sin explicar claramente:
+
+* Qué se modifica.
+* Por qué se modifica.
+* Qué impacto tendrá.
+* Cómo revertirlo si fuera necesario.
+
+Toda recomendación debe estar alineada con la arquitectura actual de Nexo-Bot, SQL, VPS Linux y un mantenimiento sostenible a largo plazo.
+---
+name: New prompt
+description: New prompt
+invokable: true
+---
+
+Please write a thorough suite of unit tests for this code, making sure to cover all relevant edge cases
