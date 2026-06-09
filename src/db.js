@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise'
 const db = await mysql.createPool({
     host: 'localhost',
     user: 'nexobot',
-    password: 'nexo123',
+    password: '1234bot',
     database: 'nexobot',
     port: 3306,
     waitForConnections: true,
