@@ -8,7 +8,7 @@ const ping = {
         const tiempo = Date.now() - inicio;
 
         await sock.sendMessage(jid, {
-            text: `🏓 *¡Pong!* El bot está activo.\n\n⚡ Tiempo de reacción: *${tiempo}ms*`
+            text: `🏓 *¡Pong!* Nexo-Bot está activo.\n\n⚡ Tiempo de reacción: *${tiempo}ms*`
         });
     }
 };
