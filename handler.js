@@ -100,6 +100,7 @@ import adivinanumero from './src/adivinanumero.js'
 import riddle from './src/riddle.js'
 import pattern from './src/pattern.js'
 import memory from './src/memory.js'
+import bandera from './src/bandera.js'
 
 import db from './src/db.js'
 
