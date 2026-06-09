@@ -2,7 +2,7 @@ import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
 
 const trabajos = [
-    { texto: '🔧 Trabajaste como mecánico', ganancia: [100, 300] },
+    { texto: '🔧 Trabajaste como mecánico.', ganancia: [100, 300] },
     { texto: '🍕 Repartiste pizzas', ganancia: [80, 200] },
     { texto: '💻 Programaste una app', ganancia: [200, 500] },
     { texto: '🚗 Fuiste conductor de taxi', ganancia: [100, 250] },
