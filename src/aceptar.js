@@ -10,7 +10,7 @@ const aceptar = {
 
         if (!args[0]) {
             await sock.sendMessage(jid, {
-                text: `❌ Debes indicar el número de solicitud.\n\n📌 Ejemplo: *.aceptar 001*`
+                text: `❌ Debes indicar el  número de solicitud.\n\n📌 Ejemplo: *.aceptar 001*`
             }, { quoted: mensaje })
             return
         }
