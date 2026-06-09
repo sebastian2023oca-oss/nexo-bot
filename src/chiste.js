@@ -9,7 +9,7 @@ const chistes = [
     '¿Cómo se despiden los químicos? Ácido un placer. 🧪',
     '¿Qué le dijo el 0 al 8? Bonito cinturón. 🥋',
     '¿Por qué el espantapájaros ganó un premio? Porque era sobresaliente en su campo. 🌾',
-    '¿Qué hace un perro con un taladro? ¡Ladra-taladra! 🐶.',
+    '¿Qué hace un perro con un taladro? ¡Ladra-taladra! 🐶',
     '¿Por qué el café fue a la policía? Porque lo estaban moliendo. ☕',
     '¿Cómo organiza una fiesta en el espacio? Lo planeta todo. 🪐',
     '¿Qué le dice un jardinero a otro? Me alegra verte, colega. 🌱',
