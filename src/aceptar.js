@@ -41,7 +41,7 @@ const aceptar = {
         const numeroSolicitud = String(id).padStart(3, '0')
 
         // Extraer código SIN modificar mayúsculas/minúsculas
-        const codigo = solicitud.link.split('https://chat.whatsapp.com/')[1]?.trim()
+        const codigo = solicitud.link.split('https://chat.whatsapp.com/')[1]?.split('?')[0]?.trim()
 
         if (!codigo) {
             await sock.sendMessage(jid, {
