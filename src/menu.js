@@ -19,6 +19,10 @@ const menuTexto = `╔═══════════════════�
 ▸ 24 páginas  ·  140+ comandos
 ▸ Prefijo: .  ·  Versión: 1.60.0
 
+👑  LINK DEL CANAL OFICIAL
+
+➪  https://tinyurl.com/Nexo-Bot
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📋  CATEGORÍAS DISPONIBLES
@@ -64,9 +68,11 @@ const menuTexto = `╔═══════════════════�
 
   ➪ .rules       → reglas del bot
   ➪ .addbot      → añadir a tu grupo
+  ➪ .saludo     → saludar al bot
+  ➪ .chiste      → contar un chiste
   ➪ .buyvip      → membresía VIP
   ➪ .buynegocio  → plan Negocios
-
+  
 ╚══════════════════════════════╝`
 
 const menu = {

@@ -128,6 +128,7 @@ const comandos = {
     dado, suerte, luck,
     ppt, duelo, speedtype,
     adivinanumero, riddle, pattern, memory,
+    bandera,
 }
 
 const permitidosEnPrivado = ['addbot']
@@ -179,7 +180,6 @@ async function manejarMensaje(sock, mensaje) {
                     [userJidMedia, 'equipar_capa_sigilo']
                 )
 
-                // Obtener nivel para calcular cooldown real
                 const [invCapa] = await db.execute(
                     'SELECT COALESCE(nivel_mejora, 0) as nivel_mejora FROM inventario_usuario WHERE jid = ? AND item = "capa_sigilo"',
                     [userJidMedia]
