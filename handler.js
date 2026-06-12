@@ -7,6 +7,7 @@ import addbot from './src/addbot.js'
 import solicitudes from './src/solicitudes.js'
 import aceptar from './src/aceptar.js'
 import rechazar from './src/rechazar.js'
+import rules from './src/rules.js'
 
 // Perfil & Registro
 import perfil from './src/perfil.js'
@@ -128,7 +129,7 @@ const comandos = {
     dado, suerte, luck,
     ppt, duelo, speedtype,
     adivinanumero, riddle, pattern, memory,
-    bandera,
+    bandera, rules,
 }
 
 const permitidosEnPrivado = ['addbot']
