@@ -44,6 +44,21 @@ const robar = {
             return
         }
 
+        // Verificar VPN → bloqueo 100% + multa al robador
+        const [vpn] = await db.execute(
+            'SELECT * FROM inventario_usuario WHERE jid = ? AND item = "vpn" AND equipado = 1', [mencionado]
+        )
+        if (vpn.length > 0) {
+            await registrarCooldown(userJid, 'robar', 15)
+            const multa = Math.floor((robador[0].monedas || 0) * 0.1)
+            if (multa > 0) await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [multa, userJid])
+            await sock.sendMessage(jid, {
+                text: `🔒 *¡ROBO BLOQUEADO POR VPN!*\n\n@${mencionado.split('@')[0]} tiene una *VPN* activa.\n\n❌ Fuiste detectado y multado *${multa} monedas*.\n\n💵 *Tu balance:* ${(robador[0].monedas || 0) - multa} monedas`,
+                mentions: [mencionado]
+            }, { quoted: mensaje })
+            return
+        }
+
         // Verificar capa_sigilo en items_activos (con nivel de mejora)
         const [capa] = await db.execute(
             'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()', [mencionado]

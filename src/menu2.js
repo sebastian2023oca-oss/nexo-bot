@@ -68,6 +68,7 @@ const menu2 = {
   ✦ *.coinflip <cantidad>* → cara o sello
   ✦ *.slots* → tragamonedas
   ✦ *.blackjack* → blackjack contra el sistema
+  ✦ *.hack @usuario* → intentar hackear banco de usuario
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

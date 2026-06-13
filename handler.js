@@ -58,6 +58,7 @@ import loteria from './src/loteria.js'
 import ruleta from './src/ruleta.js'
 import robar from './src/robar.js'
 import robar_item from './src/robar_item.js'
+import hack from './src/hack.js'
 import coinflip from './src/coinflip.js'
 import slots from './src/slots.js'
 import blackjack from './src/blackjack.js'
@@ -120,7 +121,7 @@ const comandos = {
     aceptarprestamo, rechazarprestamo, deuda, apostar,
     loteria, ruleta, robar,
     'robar_item': robar_item,
-    coinflip, slots, blackjack,
+    hack, coinflip, slots, blackjack,
     shopcoins, comprar, topbank, topmoney,
     expedicion, aventura,
     tienda, precio, stock, inventario, listar, usar, equipar, desequipar,
