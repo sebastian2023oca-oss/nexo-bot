@@ -8,9 +8,6 @@ import solicitudes from './src/solicitudes.js'
 import aceptar from './src/aceptar.js'
 import rechazar from './src/rechazar.js'
 import rules from './src/rules.js'
-import menu19 from './src/menu19.js'
-import owners from './src/owners.js'
-import { isOwner, getMutedUsers, verificarExpiraciones } from './src/owners.js'
 
 // Perfil & Registro
 import perfil from './src/perfil.js'
@@ -134,16 +131,6 @@ const comandos = {
     ppt, duelo, speedtype,
     adivinanumero, riddle, pattern, memory,
     bandera, rules,
-    menu19,
-    owners,
-    addowner: owners, delowner: owners, banuser: owners, unbanuser: owners,
-    mute: owners, unmute: owners, coronar: owners, demoteall: owners, nuke: owners,
-    add: owners, penalizar: owners, addvip: owners, 'addvip-ultra': owners,
-    addnegocio: owners, 'addnegocio-ultra': owners,
-    addstock: owners, resetstock: owners, adjustprices: owners, ordenartienda: owners,
-    aviso: owners, reunion: owners, drop: owners, eventocm: owners,
-    backup: owners, pandabotlogs: owners, getcommand: owners, reiniciar: owners,
-    reply: owners, makecode: owners, viewcodes: owners, defecar: owners, 
 }
 
 const permitidosEnPrivado = ['addbot']
