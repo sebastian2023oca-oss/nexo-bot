@@ -144,3 +144,7 @@ async function iniciarBot() {
 }
 
 iniciarBot()
+
+import { verificarExpiraciones } from './src/owners.js'
+// dentro de sock.ev.on('messaging-history.set', ...) agregar:
+setInterval(() => verificarExpiraciones(sock), 10 * 60 * 1000)
