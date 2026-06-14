@@ -6,7 +6,7 @@ async function actualizarPrecios() {
         const diff = Date.now() - new Date(item.ultimo_precio_cambio).getTime()
         if (diff >= 172800000) {
             const variacion = (Math.random() * 0.4) - 0.2
-            const minPrecio = item.item === 'capa_sigilo' ? 100000 : item.item === 'vpn' ? 1 : 100
+            const minPrecio = item.item === 'capa_sigilo' ? 100000 : item.item === 'vpn' ? 100000000 : 100
             const nuevoPrecio = Math.max(minPrecio, Math.floor(item.precio * (1 + variacion)))
             await db.execute('UPDATE tienda SET precio = ?, ultimo_precio_cambio = NOW() WHERE id = ?', [nuevoPrecio, item.id])
         }
