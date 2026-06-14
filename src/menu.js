@@ -5,6 +5,7 @@ import menu1 from './menu1.js'
 import menu2 from './menu2.js'
 import menu3 from './menu3.js'
 import menu4 from './menu4.js'
+import menu19 from './menu19.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
@@ -61,6 +62,7 @@ const menuTexto = `╔═══════════════════�
   ✦ .menu 2      → ver Economía
   ✦ .menu 3      → ver Tienda & Inventario
   ✦ .menu 4      → ver Juegos
+  ✦ .menu19      → ver Admin del Bot (Owners)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
