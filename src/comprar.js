@@ -115,7 +115,7 @@ const comprar = {
                     const expira = new Date(Date.now() + itemShop.duracion)
                     await db.execute('INSERT INTO items_activos (jid, item, expira) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE expira = ?', [userJid, itemKey, expira, expira])
                     const horas = Math.floor(itemShop.duracion / 3600000)
-                    await registrarCooldown(userJid, 'comprar', 20)
+                    await registrarCooldown(userJid, 'comprar', 0)
                     await sock.sendMessage(jid, { text: `✅ *${itemShop.nombre.toUpperCase()}*\n\nActivo por *${horas}h*.\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - itemShop.precio} monedas` }, { quoted: mensaje })
                     return
                 }
