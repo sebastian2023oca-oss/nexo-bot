@@ -21,7 +21,7 @@ const regalar = {
             return
         }
 
-        const enCooldown = await verificarCooldown(userJid, 'regalar', 20)
+        const enCooldown = await verificarCooldown(userJid, 'regalar', 1)
         if (enCooldown) {
             await sock.sendMessage(jid, { text: `⏳ Debes esperar *${enCooldown} minutos* para regalar de nuevo.` }, { quoted: mensaje })
             return
