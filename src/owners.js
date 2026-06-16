@@ -1,6 +1,6 @@
 import db from './db.js'
 
-export const OWNER_PRINCIPAL = '122218159816809@lid2'
+export const OWNER_PRINCIPAL = '122218159816809@lid' // Cambia esto al JID del owner principalS
 
 // Verifica si un JID es owner
 export async function esOwner(jid) {
