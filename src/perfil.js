@@ -34,6 +34,38 @@ const perfil = {
         const userId = String(u.id).padStart(3, '0')
         const total = String(totalRows[0].total).padStart(3, '0')
 
+        // VIP
+        let vipTexto = '❌ Inactivo'
+        if (u.vip && u.vip_expira) {
+            const ahora = Date.now()
+            const expira = new Date(u.vip_expira).getTime()
+            const restante = expira - ahora
+            if (restante > 0) {
+                const horas = Math.floor(restante / 3600000)
+                const mins = Math.floor((restante % 3600000) / 60000)
+                const tipo = u.vip_tipo || 'normal'
+                vipTexto = `✅ Activo | Tipo: ${tipo.toUpperCase()} | ⏳ ${horas}h ${mins}m restantes`
+            } else {
+                vipTexto = '❌ Expirado'
+            }
+        }
+
+        // Negocio
+        let negocioTexto = '❌ Inactivo'
+        if (u.negocio && u.neg_expira) {
+            const ahora = Date.now()
+            const expira = new Date(u.neg_expira).getTime()
+            const restante = expira - ahora
+            if (restante > 0) {
+                const horas = Math.floor(restante / 3600000)
+                const mins = Math.floor((restante % 3600000) / 60000)
+                const tipo = u.neg_tipo || 'normal'
+                negocioTexto = `✅ Activo | Tipo: ${tipo.toUpperCase()} | ⏳ ${horas}h ${mins}m restantes`
+            } else {
+                negocioTexto = '❌ Expirado'
+            }
+        }
+
         const tienMarco = u.marco === 1
         const topBorder = tienMarco ? `╔══⭐ PERFIL ESPECIAL ⭐══╗` : `╔══════════════════════════╗`
         const botBorder = tienMarco ? `╚══⭐════════════════⭐══╝` : `╚══════════════════════════╝`
@@ -79,8 +111,8 @@ ${equipadosTexto}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-👑 *VIP:* ${u.vip ? '✅ Activo' : '❌ Inactivo'}
-🏢 *Negocio:* ${u.negocio ? '✅ Activo' : '❌ Inactivo'}
+👑 *VIP:* ${vipTexto}
+🏢 *Negocio:* ${negocioTexto}
 ⭐ *Reputación:* ${u.reputacion || 0}
 
 ${botBorder}`

@@ -9,7 +9,6 @@ import aceptar from './src/aceptar.js'
 import rechazar from './src/rechazar.js'
 import rules from './src/rules.js'
 
-// Perfil & Registro
 import perfil from './src/perfil.js'
 import nivel from './src/nivel.js'
 import xp from './src/xp.js'
@@ -28,7 +27,6 @@ import block from './src/block.js'
 import id from './src/id.js'
 import avatar from './src/avatar.js'
 
-// Economía
 import balance from './src/balance.js'
 import banco from './src/banco.js'
 import saldo from './src/saldo.js'
@@ -69,7 +67,6 @@ import topmoney from './src/topmoney.js'
 import expedicion from './src/expedicion.js'
 import aventura from './src/aventura.js'
 
-// Tienda & Inventario
 import tienda from './src/tienda.js'
 import precio from './src/precio.js'
 import stock from './src/stock.js'
@@ -86,7 +83,6 @@ import almacenar from './src/almacenar.js'
 import sacar from './src/sacar.js'
 import historico from './src/historico.js'
 
-// Juegos
 import trivia from './src/trivia.js'
 import adivina from './src/adivina.js'
 import hangman from './src/hangman.js'
@@ -104,9 +100,81 @@ import pattern from './src/pattern.js'
 import memory from './src/memory.js'
 import bandera from './src/bandera.js'
 
+// Owners
+import add from './src/add.js'
+import addowner from './src/addowner.js'
+import addstock from './src/addstock.js'
+import addvip from './src/addvip.js'
+import addnegocio from './src/addnegocio.js'
+import adjustprices from './src/adjustprices.js'
+import aviso from './src/aviso.js'
+import backup from './src/backup.js'
+import banuser from './src/banuser.js'
+import coronar from './src/coronar.js'
+import delowner from './src/delowner.js'
+import demoteall from './src/demoteall.js'
+import drop from './src/drop.js'
+import eventocm from './src/eventocm.js'
+import getcommand from './src/getcommand.js'
+import mute from './src/mute.js'
+import nuke from './src/nuke.js'
+import ordenartienda from './src/ordenartienda.js'
+import pandabotlogs from './src/pandabotlogs.js'
+import penalizar from './src/penalizar.js'
+import reiniciar from './src/reiniciar.js'
+import reply from './src/reply.js'
+import resetstock from './src/resetstock.js'
+import reunion from './src/reunion.js'
+import unbanuser from './src/unbanuser.js'
+import unmute from './src/unmute.js'
+import makecode from './src/makecode.js'
+import viewcodes from './src/viewcodes.js'
+import canjear from './src/canjear.js'
+
 import db from './src/db.js'
+import { esOwner, inicializarOwners } from './src/owners.js'
+
+// Inicializar sistema de owners al arrancar
+await inicializarOwners()
+
+// Verificar VIP/Negocio expirados cada 5 minutos
+async function verificarExpiraciones(sock) {
+    try {
+        const [vipsExpirados] = await db.execute(
+            'SELECT jid, vip_tipo FROM usuarios WHERE vip = 1 AND vip_expira IS NOT NULL AND vip_expira < NOW()'
+        )
+        for (const u of vipsExpirados) {
+            await db.execute('UPDATE usuarios SET vip = 0, vip_tipo = NULL, vip_expira = NULL WHERE jid = ?', [u.jid])
+            try {
+                await sock.sendMessage(u.jid, {
+                    text: `⏰ *Tu membresía VIP ${(u.vip_tipo || 'normal').toUpperCase()} ha expirado.*\n\nSi deseas renovarla escribe *.buyvip* para ver las opciones. 👑`
+                })
+            } catch {}
+        }
+
+        const [negociosExpirados] = await db.execute(
+            'SELECT jid, neg_tipo FROM usuarios WHERE negocio = 1 AND neg_expira IS NOT NULL AND neg_expira < NOW()'
+        )
+        for (const u of negociosExpirados) {
+            await db.execute('UPDATE usuarios SET negocio = 0, neg_tipo = NULL, neg_expira = NULL WHERE jid = ?', [u.jid])
+            try {
+                await sock.sendMessage(u.jid, {
+                    text: `⏰ *Tu Plan Negocio ${(u.neg_tipo || 'normal').toUpperCase()} ha expirado.*\n\nSi deseas renovarlo escribe *.buynegocio* para ver las opciones. 🏢`
+                })
+            } catch {}
+        }
+    } catch {}
+}
 
 const PREFIJO = '.'
+
+const COMANDOS_OWNERS = [
+    'add','addowner','addstock','addvip','addvip-ultra','addnegocio','addnegocio-ultra',
+    'adjustprices','aviso','backup','banuser','coronar','delowner','demoteall',
+    'drop','eventocm','getcommand','mute','nuke','ordenartienda','pandabotlogs',
+    'penalizar','reiniciar','reply','resetstock','reunion','unbanuser','unmute',
+    'makecode','viewcodes'
+]
 
 const comandos = {
     ping, saludo, menu, chiste, addbot, solicitudes, aceptar, rechazar,
@@ -131,6 +199,17 @@ const comandos = {
     ppt, duelo, speedtype,
     adivinanumero, riddle, pattern, memory,
     bandera, rules,
+    canjear,
+    // Owners
+    add, addowner, addstock,
+    'addvip': { ejecutar: (s,m,a) => addvip.ejecutar(s,m,a,false) },
+    'addvip-ultra': { ejecutar: (s,m,a) => addvip.ejecutar(s,m,a,true) },
+    'addnegocio': { ejecutar: (s,m,a) => addnegocio.ejecutar(s,m,a,false) },
+    'addnegocio-ultra': { ejecutar: (s,m,a) => addnegocio.ejecutar(s,m,a,true) },
+    adjustprices, aviso, backup, banuser, coronar, delowner, demoteall,
+    drop, eventocm, getcommand, mute, nuke, ordenartienda, pandabotlogs,
+    penalizar, reiniciar, reply, resetstock, reunion, unbanuser, unmute,
+    makecode, viewcodes,
 }
 
 const permitidosEnPrivado = ['addbot']
@@ -157,7 +236,10 @@ async function cobrarImpuestoSilencioso(userJid) {
     } catch {}
 }
 
-async function manejarMensaje(sock, mensaje) {
+let sockGlobal = null
+
+export async function manejarMensaje(sock, mensaje) {
+    sockGlobal = sock
     const jid = mensaje.key.remoteJid
     const esGrupo = jid?.endsWith('@g.us')
 
@@ -165,7 +247,7 @@ async function manejarMensaje(sock, mensaje) {
         await autoRegistrar(sock, mensaje)
     }
 
-    // Detectar imagen, sticker o video → desequipar capa_sigilo automáticamente
+    // Detectar imagen, sticker o video → desequipar capa_sigilo
     const tipoMensaje = Object.keys(mensaje.message || {})[0]
     if (esGrupo && ['imageMessage', 'stickerMessage', 'videoMessage'].includes(tipoMensaje)) {
         const userJidMedia = mensaje.key.participant || mensaje.key.remoteJid
@@ -181,7 +263,6 @@ async function manejarMensaje(sock, mensaje) {
                     'INSERT INTO cooldowns (jid, tipo, expira) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE)) ON DUPLICATE KEY UPDATE expira = DATE_ADD(NOW(), INTERVAL 15 MINUTE)',
                     [userJidMedia, 'equipar_capa_sigilo']
                 )
-
                 const [invCapa] = await db.execute(
                     'SELECT COALESCE(nivel_mejora, 0) as nivel_mejora FROM inventario_usuario WHERE jid = ? AND item = "capa_sigilo"',
                     [userJidMedia]
@@ -190,7 +271,6 @@ async function manejarMensaje(sock, mensaje) {
                 const cooldownSecs = Math.max(0, 900 - (nivel * 10))
                 const cooldownMin = Math.floor(cooldownSecs / 60)
                 const cooldownSec = cooldownSecs % 60
-
                 await sock.sendMessage(jid, {
                     text: `🧥 *¡Capa de Sigilo desequipada!*\n\n@${userJidMedia.split('@')[0]} envió multimedia y su capa fue detectada.\n\n⏳ Cooldown: *${cooldownMin}m ${cooldownSec}s* para volver a equiparla.`,
                     mentions: [userJidMedia]
@@ -218,6 +298,28 @@ async function manejarMensaje(sock, mensaje) {
     if (!comando) return
 
     const userJid = mensaje.key.participant || mensaje.key.remoteJid
+
+    // Verificar ban
+    try {
+        const [baneado] = await db.execute('SELECT id FROM usuarios_baneados WHERE jid = ?', [userJid])
+        if (baneado.length > 0) return // ignorar silenciosamente
+    } catch {}
+
+    // Verificar mute
+    try {
+        const [muteado] = await db.execute('SELECT id FROM usuarios_muteados WHERE jid = ?', [userJid])
+        if (muteado.length > 0) return // ignorar silenciosamente
+    } catch {}
+
+    // Verificar si es comando de owner
+    if (COMANDOS_OWNERS.includes(cmd)) {
+        const esOw = await esOwner(userJid)
+        if (!esOw) {
+            await sock.sendMessage(jid, { text: `🚫 *Solo owners.*` }, { quoted: mensaje })
+            return
+        }
+    }
+
     await cobrarImpuestoSilencioso(userJid)
 
     try {
@@ -227,4 +329,7 @@ async function manejarMensaje(sock, mensaje) {
     }
 }
 
-export { manejarMensaje }
+// Iniciar verificación de expiraciones cada 5 minutos
+export function iniciarVerificacionExpiraciones(sock) {
+    setInterval(() => verificarExpiraciones(sock), 5 * 60 * 1000)
+}

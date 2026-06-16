@@ -3,7 +3,7 @@ import { Boom } from '@hapi/boom'
 import pino from 'pino'
 import { toDataURL } from 'qrcode'
 import http from 'http'
-import { manejarMensaje } from './handler.js'
+import { manejarMensaje, iniciarVerificacionExpiraciones } from './handler.js'
 
 const logger = pino({ level: 'silent' })
 let qrActual = null
@@ -120,6 +120,8 @@ async function iniciarBot() {
             reconectando = false
             console.log('Bot conectado correctamente a WhatsApp')
             try { servidor.close() } catch {}
+            
+            iniciarVerificacionExpiraciones(sock)
         }
     })
 

@@ -5,11 +5,12 @@ import menu1 from './menu1.js'
 import menu2 from './menu2.js'
 import menu3 from './menu3.js'
 import menu4 from './menu4.js'
+import menu19 from './menu19.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
 
-const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4 }
+const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4, 19: menu19 }
 
 const menuTexto = `╔════════════════════════════════╗
 ║      ✦  N E X O  B O T  ✦      ║
@@ -45,7 +46,7 @@ const menuTexto = `╔═══════════════════�
   ├─ pág 16 ─┤  🎉 𝕊𝗢𝗖𝕀𝗔𝗟 & 𝗖𝗢𝗠𝗨ℕ𝕀𝗗𝗔𝗗
   ├─ pág 17 ─┤  📣 𝗔ℕ𝗨ℕ𝗖𝕀𝗢𝕊 & 𝗗𝕀𝗙𝗨𝕊𝕀𝗢́ℕ
   ├─ pág 18 ─┤  ℹ️  𝕀ℕ𝗙𝗢 𝗗𝗘𝗟 𝗕𝗢𝕋
-  ├─ pág 19 ─┤  🛡️  𝗔𝗗𝗠𝕀ℕ 𝗗𝗘𝗟 𝗕𝗢𝕋
+  ├─ pág 19 ─┤  🛡️  𝗔𝗗𝗠𝕀ℕ 𝗗𝗘𝗟 𝗕𝗢𝕋 (OWNERS)
   ├─ pág 20 ─┤  🏢 ℕ𝗘𝗚𝗢𝗖𝕀𝗢𝕊 💼
   ├─ pág 21 ─┤  👥 𝗕𝗢𝕋 𝗗𝗘 𝗚ℝ𝗨𝗣𝗢
   ├─ pág 22 ─┤  🌸 𝗚𝕀𝗙𝕊 & 𝗔𝗖𝗖𝕀𝗢ℕ𝗘𝕊 ✨
@@ -61,6 +62,7 @@ const menuTexto = `╔═══════════════════�
   ✦ .menu 2      → ver Economía
   ✦ .menu 3      → ver Tienda & Inventario
   ✦ .menu 4      → ver Juegos
+  ✦ .menu 19     → ver Panel Owners
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -68,8 +70,9 @@ const menuTexto = `╔═══════════════════�
 
   ➪ .rules       → reglas del bot
   ➪ .addbot      → añadir a tu grupo
-  ➪ .saludo     → saludar al bot
+  ➪ .saludo      → saludar al bot
   ➪ .chiste      → contar un chiste
+  ➪ .canjear     → canjear un código
   ➪ .buyvip      → membresía VIP
   ➪ .buynegocio  → plan Negocios
   
