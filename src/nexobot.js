@@ -1,7 +1,7 @@
 import { esOwner } from './owners.js'
 import { readFileSync, existsSync } from 'fs'
 
-const pandabotlogs = {
+const nexobotlogs = {
     async ejecutar(sock, mensaje) {
         const jid = mensaje.key.remoteJid
         const userJid = mensaje.key.participant || mensaje.key.remoteJid
@@ -39,4 +39,4 @@ const pandabotlogs = {
     }
 }
 
-export default pandabotlogs
+export default nexobotlogs

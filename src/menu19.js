@@ -69,7 +69,7 @@ const menu19 = {
 
   ✦ *.backup* → backup de BD
   ✦ *.reiniciar* → reiniciar bot
-  ✦ *.pandabotlogs* → ver consola
+  ✦ *.nexobotlogs* → ver consola
   ✦ *.getcommand <comando>* → ver código
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
