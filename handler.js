@@ -130,6 +130,8 @@ import unmute from './src/unmute.js'
 import makecode from './src/makecode.js'
 import viewcodes from './src/viewcodes.js'
 import canjear from './src/canjear.js'
+import cagar from './src/cagar.js'
+import violar from './src/violar.js'
 
 import db from './src/db.js'
 import { esOwner, inicializarOwners } from './src/owners.js'
@@ -173,7 +175,7 @@ const COMANDOS_OWNERS = [
     'adjustprices','aviso','backup','banuser','coronar','delowner','demoteall',
     'drop','eventocm','getcommand','mute','nuke','ordenartienda','nexobotlogs',
     'penalizar','reiniciar','reply','resetstock','reunion','unbanuser','unmute',
-    'makecode','viewcodes'
+    'makecode','viewcodes', "cagar", "violar",
 ]
 
 const comandos = {
@@ -209,7 +211,7 @@ const comandos = {
     adjustprices, aviso, backup, banuser, coronar, delowner, demoteall,
     drop, eventocm, getcommand, mute, nuke, ordenartienda, nexobotlogs,
     penalizar, reiniciar, reply, resetstock, reunion, unbanuser, unmute,
-    makecode, viewcodes,
+    makecode, viewcodes, cagar, violar, 
 }
 
 const permitidosEnPrivado = ['addbot']
