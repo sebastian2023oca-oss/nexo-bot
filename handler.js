@@ -270,7 +270,7 @@ const PREFIJO = '.'
 const COMANDOS_OWNERS = [
     'add','addowner','addstock','addvip','addvip-ultra','addnegocio','addnegocio-ultra',
     'adjustprices','aviso','backup','banuser','coronar','delowner','demoteall',
-    'drop','eventocm','getcommand','mute','nuke','ordenartienda','pandabotlogs',
+    'drop','eventocm','getcommand','mute','nuke','ordenartienda','nexobotlogs',
     'penalizar','reiniciar','reply','resetstock','reunion','unbanuser','unmute',
     'makecode','viewcodes','cagar','violar','antibaneostats','cachestats',
     'statussistema','resumenactividad','mantenimiento','emergencia','apagar','activarrampa',
@@ -324,7 +324,7 @@ const comandos = {
     'addnegocio': { ejecutar: (s,m,a) => addnegocio.ejecutar(s,m,a,false) },
     'addnegocio-ultra': { ejecutar: (s,m,a) => addnegocio.ejecutar(s,m,a,true) },
     adjustprices, aviso, backup, banuser, coronar, delowner, demoteall,
-    drop, eventocm, getcommand, mute, nuke, ordenartienda, pandabotlogs,
+    drop, eventocm, getcommand, mute, nuke, ordenartienda, nexobotlogs,
     penalizar, reiniciar, reply, resetstock, reunion, unbanuser, unmute,
     makecode, viewcodes, cagar, violar,
 
