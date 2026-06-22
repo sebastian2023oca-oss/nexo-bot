@@ -1,17 +1,11 @@
-import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import menu1 from './menu1.js'
 import menu2 from './menu2.js'
 import menu3 from './menu3.js'
 import menu4 from './menu4.js'
-import menu5 from './menu5.js'
 import menu19 from './menu19.js'
+import { obtenerImagenMenu } from './cache.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const imagen = () => readFileSync(join(__dirname, '../assets/menu.jpg'))
-
-const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4, 5: menu5, 19: menu19 }
+const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4, 19: menu19 }
 
 const menuTexto = `╔════════════════════════════════╗
 ║      ✦  N E X O  B O T  ✦      ║
@@ -19,7 +13,7 @@ const menuTexto = `╔═══════════════════�
 ╚════════════════════════════════╝
 
 ▸ 24 páginas  ·  140+ comandos
-▸ Prefijo: .  ·  Versión: 1.60.5
+▸ Prefijo: .  ·  Versión: 1.80.5
 
 👑  LINK DEL CANAL OFICIAL
 
@@ -36,7 +30,7 @@ const menuTexto = `╔═══════════════════�
   ├─ pág 05 ─┤  🎯 𝗔𝗣𝗨𝗘𝕊𝕋𝗔𝕊
   ├─ pág 06 ─┤  🤖 𝕀ℕ𝕋𝗘𝗟𝕀𝗚𝗘ℕ𝗖𝕀𝗔 𝗔ℝ𝕋𝕀𝗙𝕀𝗖𝕀𝗔𝗟
   ├─ pág 07 ─┤  🎵 𝗠𝗨𝗟𝕋𝕀𝗠𝗘𝗗𝕀𝗔 & 𝗗𝗘𝕊𝗖𝗔ℝ𝗚𝗔𝕊
-  ├─ pág 08 ─┤  🖼️  𝕊𝕋𝕀𝗖𝗞𝗘ℝ𝕊 & 𝕀𝗠𝗔𝗚𝗘ℕ𝗘𝕊
+  ├─ pág 08 ─┤  🖼️  𝕊𝕋𝕀𝗖𝗖𝗘ℝ𝕊 & 𝕀𝗠𝗔𝗚𝗘ℕ𝗘𝕊
   ├─ pág 09 ─┤  🔍 𝗕𝗨́𝕊𝗤𝗨𝗘𝗗𝗔𝕊 & 𝗖𝗢ℕ𝕊𝗨𝗟𝕋𝗔𝕊
   ├─ pág 10 ─┤  🧮 𝗨𝕋𝕀𝗟𝕀𝗗𝗔𝗗𝗘𝕊
   ├─ pág 11 ─┤  📅 𝗣ℝ𝗢𝗗𝗨𝗖𝕋𝕀𝗩𝕀𝗗𝗔𝗗
@@ -85,7 +79,10 @@ const menu = {
         const jid = mensaje.key.remoteJid
 
         if (!args[0]) {
-            await sock.sendMessage(jid, { image: imagen(), caption: menuTexto }, { quoted: mensaje })
+            // La imagen viene del caché (precargada en el warm-up al
+            // arrancar el bot); si por algún motivo no estaba cacheada,
+            // obtenerImagenMenu() la lee de disco y la cachea en ese momento.
+            await sock.sendMessage(jid, { image: obtenerImagenMenu(), caption: menuTexto }, { quoted: mensaje })
             return
         }
 

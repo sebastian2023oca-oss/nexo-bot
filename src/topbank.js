@@ -1,12 +1,16 @@
 import db from './db.js'
+import { obtenerOCachear, TTL } from './cache.js'
 
 const topbank = {
     async ejecutar(sock, mensaje) {
         const jid = mensaje.key.remoteJid
 
-        const [rows] = await db.execute(
-            'SELECT jid, nombre, banco FROM usuarios ORDER BY banco DESC LIMIT 10'
-        )
+        const rows = await obtenerOCachear('ranking:topbank', TTL.RANKING, async () => {
+            const [rows] = await db.execute(
+                'SELECT jid, nombre, banco FROM usuarios ORDER BY banco DESC LIMIT 10'
+            )
+            return rows
+        })
 
         if (rows.length === 0) {
             await sock.sendMessage(jid, { text: `📊 Aún no hay usuarios registrados.` }, { quoted: mensaje })

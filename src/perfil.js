@@ -1,4 +1,5 @@
 import db from './db.js'
+import { obtenerOCachear, invalidarCache, TTL } from './cache.js'
 
 const perfil = {
     async ejecutar(sock, mensaje, args) {
@@ -13,8 +14,20 @@ const perfil = {
             targetNombre = mencionado.split('@')[0]
         }
 
-        const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [targetJid])
-        const [totalRows] = await db.execute('SELECT COUNT(*) as total FROM usuarios')
+        // Caché por usuario objetivo: muchas personas pueden pedir el
+        // mismo perfil ajeno en poco tiempo (ej. "mira el perfil de X").
+        const { rows, totalRows, equipados } = await obtenerOCachear(
+            `perfil:${targetJid}`,
+            TTL.PERFIL,
+            async () => {
+                const [rows] = await db.execute('SELECT * FROM usuarios WHERE jid = ?', [targetJid])
+                const [totalRows] = await db.execute('SELECT COUNT(*) as total FROM usuarios')
+                const [equipados] = await db.execute(
+                    'SELECT item FROM inventario_usuario WHERE jid = ? AND equipado = 1', [targetJid]
+                )
+                return { rows, totalRows, equipados }
+            }
+        )
 
         if (rows.length === 0) {
             await sock.sendMessage(jid, { text: `❌ Este usuario no está registrado en el bot.` }, { quoted: mensaje })
@@ -70,9 +83,6 @@ const perfil = {
         const topBorder = tienMarco ? `╔══⭐ PERFIL ESPECIAL ⭐══╗` : `╔══════════════════════════╗`
         const botBorder = tienMarco ? `╚══⭐════════════════⭐══╝` : `╚══════════════════════════╝`
 
-        const [equipados] = await db.execute(
-            'SELECT item FROM inventario_usuario WHERE jid = ? AND equipado = 1', [targetJid]
-        )
         const equipadosTexto = equipados.length > 0
             ? equipados.map(e => `⚡ ${e.item}`).join('\n')
             : 'Ninguno'
@@ -118,6 +128,13 @@ ${equipadosTexto}
 ${botBorder}`
         }, { quoted: mensaje })
     }
+}
+
+// Permite que comandos que modifican el perfil (setbio, setname, setstatus,
+// resetperfil, addvip, addnegocio, etc.) invaliden la caché de un usuario
+// puntual sin que este archivo necesite conocerlos a ellos.
+export function invalidarCachePerfil(targetJid) {
+    invalidarCache(`perfil:${targetJid}`)
 }
 
 export default perfil

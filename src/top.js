@@ -1,4 +1,5 @@
 import db from './db.js'
+import { obtenerOCachear, TTL } from './cache.js'
 
 const RECOMPENSAS_TOP = {
     1: 1500,
@@ -208,12 +209,17 @@ const top = {
 
         await asegurarTablasTop()
 
-        const [rows] = await db.execute(
-            `SELECT jid, nombre, nivel, xp
-             FROM usuarios
-             ORDER BY xp DESC, nivel DESC, monedas DESC
-             LIMIT 10`
-        )
+        // Caché global de 45s: el ranking top 10 no necesita recalcularse
+        // en cada llamada si varios usuarios escriben .top casi a la vez.
+        const rows = await obtenerOCachear('top:global10', TTL.RANKING, async () => {
+            const [rows] = await db.execute(
+                `SELECT jid, nombre, nivel, xp
+                 FROM usuarios
+                 ORDER BY xp DESC, nivel DESC, monedas DESC
+                 LIMIT 10`
+            )
+            return rows
+        })
 
         if (rows.length === 0) {
             await sock.sendMessage(jid, { text: '📊 Aún no hay usuarios registrados.' }, { quoted: mensaje })
@@ -238,6 +244,10 @@ const top = {
 
         await sock.sendMessage(jid, { text: texto, mentions: menciones }, { quoted: mensaje })
 
+        // Estas tres siguen ejecutándose SIEMPRE con datos frescos del
+        // array (aunque venga de caché), porque son efectos secundarios
+        // de negocio (insignias, rachas, recompensas) que no se deben
+        // saltar solo porque el ranking en sí esté cacheado.
         await registrarTopDelDia(rows)
         await darInsigniasTop(sock, jid, rows)
         await darRecompensasTop(sock, jid, mensaje, rows)
