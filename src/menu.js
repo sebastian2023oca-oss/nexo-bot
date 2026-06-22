@@ -2,10 +2,11 @@ import menu1 from './menu1.js'
 import menu2 from './menu2.js'
 import menu3 from './menu3.js'
 import menu4 from './menu4.js'
+import menu5 from './menu5.js'
 import menu19 from './menu19.js'
 import { obtenerImagenMenu } from './cache.js'
 
-const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4, 19: menu19 }
+const submenus = { 1: menu1, 2: menu2, 3: menu3, 4: menu4, 5: menu5, 19: menu19 }
 
 const menuTexto = `╔════════════════════════════════╗
 ║      ✦  N E X O  B O T  ✦      ║
@@ -57,6 +58,7 @@ const menuTexto = `╔═══════════════════�
   ✦ .menu 2      → ver Economía
   ✦ .menu 3      → ver Tienda & Inventario
   ✦ .menu 4      → ver Juegos
+  ✦ .menu 5      → ver Apuestas
   ✦ .menu 19     → ver Panel Owners
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
