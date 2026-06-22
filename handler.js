@@ -172,7 +172,7 @@ import makecode from './src/makecode.js'
 import viewcodes from './src/viewcodes.js'
 import canjear from './src/canjear.js'
 import cagar from './src/cagar.js'
-import violar from './src/violarS.js'
+import violar from './src/violar.js'
 
 import db from './src/db.js'
 import { esOwner, inicializarOwners } from './src/owners.js'
