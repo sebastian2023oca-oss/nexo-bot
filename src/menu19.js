@@ -95,7 +95,7 @@ const menu19 = {
 
 😈 *DIVERSIÓN*
 
-  ✦ *.defecar @usuario* → 💩
+  ✦ *.cagar @usuario* → 💩
   ✦ *.violar @usuario* → 👀
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

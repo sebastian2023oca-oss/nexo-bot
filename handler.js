@@ -221,7 +221,7 @@ const COMANDOS_OWNERS = [
     'adjustprices','aviso','backup','banuser','coronar','delowner','demoteall',
     'drop','eventocm','getcommand','mute','nuke','ordenartienda','nexobotlogs',
     'penalizar','reiniciar','reply','resetstock','reunion','unbanuser','unmute',
-    'makecode','viewcodes','cagar','atrapar','violar',
+    'makecode','viewcodes','cagar','violar',
     'restablecimiento','impuestos','inflacion'
 ]
 
