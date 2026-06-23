@@ -176,6 +176,7 @@ import violar from './src/violar.js'
 import restablecimiento from './src/restablecimiento.js'
 import impuestos from './src/impuestos.js'
 import inflacion from './src/inflacion.js'
+import mantenimiento from './src/mantenimiento.js'
 
 import db from './src/db.js'
 import { esOwner, inicializarOwners } from './src/owners.js'
@@ -222,7 +223,7 @@ const COMANDOS_OWNERS = [
     'drop','eventocm','getcommand','mute','nuke','ordenartienda','nexobotlogs',
     'penalizar','reiniciar','reply','resetstock','reunion','unbanuser','unmute',
     'makecode','viewcodes','cagar','violar',
-    'restablecimiento','impuestos','inflacion'
+    'restablecimiento','impuestos','inflacion', 'mantenimiento',
 ]
 
 const comandos = {
@@ -276,6 +277,7 @@ const comandos = {
     penalizar, reiniciar, reply, resetstock, reunion, unbanuser, unmute,
     makecode, viewcodes, cagar, violar,
     restablecimiento, impuestos, inflacion,
+    mantenimiento,
 }
 
 const permitidosEnPrivado = ['addbot']
