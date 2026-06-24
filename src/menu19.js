@@ -65,13 +65,35 @@ const menu19 = {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+🛡️ *ANTI-BANEO & SISTEMA*
+
+  ✦ *.antibaneostats* → estadísticas de flood/cola/spam
+  ✦ *.cachestats* → hit-rate y entradas activas de caché
+  ✦ *.statussistema* → RAM/CPU del proceso y del VPS
+  ✦ *.resumenactividad <horas>* → comandos, usuarios y errores recientes
+  ✦ *.mantenimiento on/off <motivo>* → bloquear el bot para usuarios
+  ✦ *.emergencia <motivo>* → parar todo al instante (también *.emergencia off*)
+  ✦ *.apagar* → deja de aceptar comandos antes de un apagado/reinicio
+  ✦ *.activarrampa on/off* → activación gradual tras reconectar el número
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 *REPUTACIÓN DE GRUPOS*
+
+  ✦ *.repgrupo* → ver reputación del grupo actual (o pasa un JID)
+  ✦ *.reportargrupo <motivo>* → reporta el grupo actual (baja su puntaje)
+
+  💡 Si la reputación de un grupo cae bajo el umbral crítico y se
+  mantiene así 24h, el bot sale automáticamente y avisa a los owners.
+  💡 Límite de 10 grupos nuevos aceptados por día (ver *.aceptar*).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ☢️ *ECONOMÍA GLOBAL (CRÍTICO)*
 
-  ✦ *.restablecimiento* → ⚠️ borra TODO y reinicia a todos en 0
-  ✦ *.impuestos* → quita 90% de dinero a todos los usuarios
-  ✦ *.inflacion* → sube precios de la tienda permanentemente
-
-  ⚠️ Estos comandos afectan a TODOS, incluso al dueño del bot.
+  ✦ *.restablecimiento* → reinicia economía global (resetea todo)
+  ✦ *.impuestos* → Se le cobra un impuesto general a todos los usuarios (del 90% de su dinero, mano + banco). Se requiere confirmación. 
+  ✦ *.inflacion* → aumenta el precio de todos los items de la tienda en un porcentaje.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
