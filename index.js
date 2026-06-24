@@ -3,7 +3,7 @@ import { Boom } from '@hapi/boom'
 import pino from 'pino'
 import { toDataURL } from 'qrcode'
 import http from 'http'
-import { manejarMensaje, iniciarVerificacionExpiraciones } from './handler.js'
+import { manejarMensaje, iniciarVerificacionExpiraciones, iniciarEvaluacionReputacionGrupos } from './handler.js'
 const logger = pino({ level: 'silent' })
 let qrActual = null
 let sockActual = null
