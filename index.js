@@ -135,12 +135,21 @@ async function iniciarBot() {
         if (type !== 'notify') return
 
         for (const mensaje of messages) {
-            if (!mensaje.key.fromMe) {
-                try {
-                    await manejarMensaje(sock, mensaje)
-                } catch (err) {
-                    console.log('Mensaje ignorado por error de cifrado')
-                }
+            const esGrupo = mensaje.key.remoteJid?.endsWith('@g.us')
+
+            // Los mensajes propios (fromMe: true) normalmente se ignoran,
+            // ya que incluyen tanto las respuestas que el bot envía como
+            // los mensajes que el dueño escribe desde el celular vinculado.
+            // Se permite procesarlos SOLO en grupos, para que el dueño
+            // pueda usar comandos directamente desde su propio número.
+            // En privado se sigue ignorando para evitar que el bot intente
+            // reprocesar sus propias respuestas como comandos.
+            if (mensaje.key.fromMe && !esGrupo) continue
+
+            try {
+                await manejarMensaje(sock, mensaje)
+            } catch (err) {
+                console.log('Mensaje ignorado por error de cifrado')
             }
         }
     })
