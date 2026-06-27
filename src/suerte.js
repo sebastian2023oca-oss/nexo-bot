@@ -26,12 +26,12 @@ const suerte = {
             return
         }
 
-        // Verificar poción de suerte → más eventos positivos
+        // Verificar poción de suerte → ligero aumento de probabilidad
         const [pocion] = await db.execute(
             'SELECT * FROM items_activos WHERE jid = ? AND item = "pocion" AND expira > NOW()', [userJid]
         )
         const tienePocion = pocion.length > 0
-        const prob = tienePocion ? 0.65 : 0.5
+        const prob = tienePocion ? 0.40 : 0.3
 
         const evento = Math.random() < prob
             ? eventos.filter(e => e.victoria)[Math.floor(Math.random() * 5)]
@@ -44,7 +44,7 @@ const suerte = {
             await darRecompensaJuego(userJid, 3, 10)
             await intentarDarEstrella(userJid, sock, jid, mensaje)
             await sock.sendMessage(jid, {
-                text: `🎰 *EVENTO DE SUERTE*\n\n${evento.texto}\n\n✅ *¡Buena suerte!*${tienePocion ? '\n🧪 Poción activa (+15% suerte)' : ''}\n✨ *+3 XP* | 💰 *+10 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                text: `🎰 *EVENTO DE SUERTE*\n\n${evento.texto}\n\n✅ *¡Buena suerte!*${tienePocion ? '\n🧪 Poción activa (+10% suerte)' : ''}\n✨ *+3 XP* | 💰 *+10 monedas*\n🏆 *Victorias totales:* ${victorias}`
             }, { quoted: mensaje })
         } else {
             await sock.sendMessage(jid, {

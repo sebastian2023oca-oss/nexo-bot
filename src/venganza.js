@@ -52,8 +52,8 @@ const venganza = {
             return
         }
 
-        // La revancha da una pequeña ventaja al que se venga (55%)
-        const ganaVengador = Math.random() < 0.55
+        // Quien ejecuta el comando (el vengador, userJid) gana 30% de las veces
+        const ganaVengador = Math.random() < 0.3
         const ganador = ganaVengador ? userJid : mencionado
         const perdedor = ganaVengador ? mencionado : userJid
 

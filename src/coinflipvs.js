@@ -39,7 +39,8 @@ const coinflipvs = {
             return
         }
 
-        const ganaJ1 = Math.random() < 0.5
+        // El retador (quien ejecuta el comando) gana 30% de las veces
+        const ganaJ1 = Math.random() < 0.3
         const ganador = ganaJ1 ? userJid : mencionado
         const perdedor = ganaJ1 ? mencionado : userJid
         const resultado = Math.random() < 0.5 ? 'CARA' : 'SELLO'

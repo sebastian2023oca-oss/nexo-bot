@@ -3,7 +3,6 @@ import { verificarCooldown, registrarCooldown } from './utils.js'
 import { registrarJugadaCasino } from './casinoUtils.js'
 
 const MAX_RONDAS = 6
-const PROB_SOBREVIVIR = 0.65
 
 const sobrevive = {
     async ejecutar(sock, mensaje, args) {
@@ -38,19 +37,18 @@ const sobrevive = {
             return
         }
 
-        let rondasSobrevividas = 0
+        // Un solo check de 30/70: si gana, sobrevive TODAS las rondas;
+        // si pierde, cae de inmediato en la primera ronda.
+        const gana = Math.random() < 0.3
+        const rondasSobrevividas = gana ? MAX_RONDAS : 0
+
         let detalle = ''
-        for (let i = 1; i <= MAX_RONDAS; i++) {
-            if (Math.random() < PROB_SOBREVIVIR) {
-                rondasSobrevividas = i
-                detalle += `🟢 Ronda ${i}: sobreviviste\n`
-            } else {
-                detalle += `🔴 Ronda ${i}: caíste\n`
-                break
-            }
+        if (gana) {
+            for (let i = 1; i <= MAX_RONDAS; i++) detalle += `🟢 Ronda ${i}: sobreviviste\n`
+        } else {
+            detalle += `🔴 Ronda 1: caíste\n`
         }
 
-        // Multiplicador crece exponencialmente con rondas sobrevividas
         const multiplicador = rondasSobrevividas === 0 ? 0 : Math.pow(1.45, rondasSobrevividas)
         const premio = Math.floor(cantidad * multiplicador)
         const ganancia = premio - cantidad
@@ -60,7 +58,7 @@ const sobrevive = {
         await registrarJugadaCasino(userJid, 'sobrevive', cantidad, ganancia >= 0 ? 'gano' : 'perdio', ganancia)
 
         await sock.sendMessage(jid, {
-            text: `🏕️ *SOBREVIVE*\n\n${detalle}\n${rondasSobrevividas === MAX_RONDAS ? '🏆 *¡SOBREVIVISTE TODAS LAS RONDAS!*\n' : `💀 *Caíste en la ronda ${rondasSobrevividas + 1}*\n`}\n💰 *Apostado:* ${cantidad} monedas\n🎁 *Obtenido:* ${premio} monedas\n${ganancia >= 0 ? '📈' : '📉'} *Resultado:* ${ganancia >= 0 ? '+' : ''}${ganancia} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad + premio} monedas`
+            text: `🏕️ *SOBREVIVE*\n\n${detalle}\n${rondasSobrevividas === MAX_RONDAS ? '🏆 *¡SOBREVIVISTE TODAS LAS RONDAS!*\n' : `💀 *Caíste en la ronda 1*\n`}\n💰 *Apostado:* ${cantidad} monedas\n🎁 *Obtenido:* ${premio} monedas\n${ganancia >= 0 ? '📈' : '📉'} *Resultado:* ${ganancia >= 0 ? '+' : ''}${ganancia} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad + premio} monedas`
         }, { quoted: mensaje })
     }
 }

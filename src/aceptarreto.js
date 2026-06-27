@@ -31,7 +31,8 @@ const aceptarreto = {
             return
         }
 
-        const ganaRetador = Math.random() < 0.5
+        // Quien retó (jid_retador) gana 30% de las veces
+        const ganaRetador = Math.random() < 0.3
         const ganador = ganaRetador ? reto.jid_retador : userJid
         const perdedor = ganaRetador ? userJid : reto.jid_retador
 

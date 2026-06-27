@@ -13,9 +13,14 @@ const dado = {
             return
         }
 
-        const resultado = Math.floor(Math.random() * 6) + 1
+        // El resultado de ganar/perder se decide primero con 30/70, y
+        // luego se elige un número de dado consistente con ese desenlace
+        // (5-6 si gana, 1-4 si pierde) para mantener la mecánica visual.
+        const gano = Math.random() < 0.3
+        const resultado = gano
+            ? (Math.floor(Math.random() * 2) + 5) // 5 o 6
+            : (Math.floor(Math.random() * 4) + 1) // 1 a 4
         const emojis = ['', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣']
-        const gano = resultado >= 5
 
         await registrarCooldown(userJid, 'dado', 3)
 

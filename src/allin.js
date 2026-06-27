@@ -39,7 +39,8 @@ const allin = {
         // Solo se arriesga el monto menor entre ambos (lo que el más pobre pueda perder)
         const apuesta = Math.min(monedas1, monedas2)
 
-        const ganaJ1 = Math.random() < 0.5
+        // Retador (userJid) gana 30% de las veces
+        const ganaJ1 = Math.random() < 0.3
         const ganador = ganaJ1 ? userJid : mencionado
         const perdedor = ganaJ1 ? mencionado : userJid
 

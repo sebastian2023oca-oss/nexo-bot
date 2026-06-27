@@ -34,7 +34,7 @@ const coinflip = {
             return
         }
 
-        const resultado = Math.random() < 0.5
+        const resultado = Math.random() < 0.3
 
         if (resultado) {
             await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [cantidad, userJid])

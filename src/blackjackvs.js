@@ -17,6 +17,34 @@ function suma(mano) {
     return total
 }
 
+// Genera dos manos cuyo desenlace coincide con quién debe ganar
+// ('j1' o 'j2'), manteniendo la presentación visual de cartas.
+function generarManosVs(ganador) {
+    let intentos = 0
+    while (intentos < 200) {
+        intentos++
+        const mano1 = [carta(), carta()]
+        const mano2 = [carta(), carta()]
+        while (suma(mano1) < 17) mano1.push(carta())
+        while (suma(mano2) < 17) mano2.push(carta())
+
+        const p1 = suma(mano1)
+        const p2 = suma(mano2)
+
+        let resultadoReal
+        if (p1 > 21 && p2 > 21) resultadoReal = 'empate'
+        else if (p1 > 21) resultadoReal = 'j2'
+        else if (p2 > 21) resultadoReal = 'j1'
+        else if (p1 === p2) resultadoReal = 'empate'
+        else resultadoReal = p1 > p2 ? 'j1' : 'j2'
+
+        if (resultadoReal === ganador) {
+            return { mano1, mano2, p1, p2 }
+        }
+    }
+    return { mano1: ['10', '8'], mano2: ['10', '6'], p1: 18, p2: 16 }
+}
+
 const blackjackvs = {
     async ejecutar(sock, mensaje, args) {
         const jid = mensaje.key.remoteJid
@@ -55,29 +83,12 @@ const blackjackvs = {
             return
         }
 
-        const mano1 = [carta(), carta()]
-        const mano2 = [carta(), carta()]
-        while (suma(mano1) < 17) mano1.push(carta())
-        while (suma(mano2) < 17) mano2.push(carta())
+        // Retador (userJid = j1) gana 30% de las veces
+        const desenlace = Math.random() < 0.3 ? 'j1' : 'j2'
+        const { mano1, mano2, p1, p2 } = generarManosVs(desenlace)
 
-        const p1 = suma(mano1)
-        const p2 = suma(mano2)
-
-        let ganador, perdedor, resultado
-        if (p1 > 21 && p2 > 21) {
-            await sock.sendMessage(jid, { text: `🃏 *BLACKJACK VS*\n\n@${userJid.split('@')[0]}: ${mano1.join(' ')} = ${p1} 💥\n@${mencionado.split('@')[0]}: ${mano2.join(' ')} = ${p2} 💥\n\n🤝 *Ambos se pasaron. Empate, nadie pierde nada.*`, mentions: [userJid, mencionado] }, { quoted: mensaje })
-            return
-        } else if (p1 > 21) {
-            ganador = mencionado; perdedor = userJid
-        } else if (p2 > 21) {
-            ganador = userJid; perdedor = mencionado
-        } else if (p1 === p2) {
-            await sock.sendMessage(jid, { text: `🃏 *BLACKJACK VS*\n\n@${userJid.split('@')[0]}: ${mano1.join(' ')} = ${p1}\n@${mencionado.split('@')[0]}: ${mano2.join(' ')} = ${p2}\n\n🤝 *¡EMPATE!* Nadie pierde nada.`, mentions: [userJid, mencionado] }, { quoted: mensaje })
-            return
-        } else {
-            ganador = p1 > p2 ? userJid : mencionado
-            perdedor = p1 > p2 ? mencionado : userJid
-        }
+        const ganador = desenlace === 'j1' ? userJid : mencionado
+        const perdedor = desenlace === 'j1' ? mencionado : userJid
 
         await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [cantidad, perdedor])
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [cantidad, ganador])

@@ -26,17 +26,25 @@ const ppt = {
             return
         }
 
-        const bot = opciones[Math.floor(Math.random() * 3)]
-        const emojis = { piedra: '🪨', papel: '📄', tijera: '✂️' }
+        const pierdeContra = { piedra: 'papel', papel: 'tijera', tijera: 'piedra' } // lo que le gana a "jugador"
+        const ganaA = { piedra: 'tijera', papel: 'piedra', tijera: 'papel' } // lo que "jugador" le gana
 
-        let resultado
-        if (jugador === bot) resultado = 'empate'
-        else if (
-            (jugador === 'piedra' && bot === 'tijera') ||
-            (jugador === 'papel' && bot === 'piedra') ||
-            (jugador === 'tijera' && bot === 'papel')
-        ) resultado = 'gana'
-        else resultado = 'pierde'
+        // Se decide primero el desenlace con 30/70, luego se elige la
+        // jugada del bot consistente con ese desenlace.
+        const rand = Math.random()
+        let bot, resultado
+        if (rand < 0.3) {
+            bot = ganaA[jugador]
+            resultado = 'gana'
+        } else if (rand < 0.45) {
+            bot = jugador
+            resultado = 'empate'
+        } else {
+            bot = pierdeContra[jugador]
+            resultado = 'pierde'
+        }
+
+        const emojis = { piedra: '🪨', papel: '📄', tijera: '✂️' }
 
         await registrarCooldown(userJid, 'ppt', 3)
 

@@ -17,7 +17,7 @@ const luck = {
             'SELECT * FROM items_activos WHERE jid = ? AND item = "pocion" AND expira > NOW()', [userJid]
         )
         const tienePocion = pocion.length > 0
-        const prob = tienePocion ? 0.60 : 0.45
+        const prob = tienePocion ? 0.40 : 0.3
 
         const gano = Math.random() < prob
         const porcentaje = Math.floor(Math.random() * 30) + 50
@@ -29,7 +29,7 @@ const luck = {
             await darRecompensaJuego(userJid, 3, 10)
             await intentarDarEstrella(userJid, sock, jid, mensaje)
             await sock.sendMessage(jid, {
-                text: `🍀 *SISTEMA DE SUERTE*\n\n🎯 Probabilidad: *${porcentaje}%*\n\n✅ *¡GANASTE!*${tienePocion ? '\n🧪 Poción activa (+15%)' : ''}\n✨ *+3 XP* | 💰 *+10 monedas*\n🏆 *Victorias totales:* ${victorias}`
+                text: `🍀 *SISTEMA DE SUERTE*\n\n🎯 Probabilidad: *${porcentaje}%*\n\n✅ *¡GANASTE!*${tienePocion ? '\n🧪 Poción activa (+10%)' : ''}\n✨ *+3 XP* | 💰 *+10 monedas*\n🏆 *Victorias totales:* ${victorias}`
             }, { quoted: mensaje })
         } else {
             await sock.sendMessage(jid, {

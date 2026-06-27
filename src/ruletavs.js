@@ -39,7 +39,8 @@ const ruletavs = {
             return
         }
 
-        const ganaJ1 = Math.random() < 0.5
+        // Retador (userJid) gana 30% de las veces
+        const ganaJ1 = Math.random() < 0.3
         const ganador = ganaJ1 ? userJid : mencionado
         const perdedor = ganaJ1 ? mencionado : userJid
         const color = Math.random() < 0.5 ? '🔴 Rojo' : '⚫ Negro'

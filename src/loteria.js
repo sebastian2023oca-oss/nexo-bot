@@ -40,15 +40,22 @@ const loteria = {
         let premio = 0
         let texto = ''
 
-        if (numero === 77) {
-            premio = PREMIO_MAYOR
-            texto = `🎰 *¡PREMIO MAYOR!*\n\n🎉 ¡Ganaste *${PREMIO_MAYOR} monedas*!\n\nNúmero ganador: *77*`
-        } else if (numero % 10 === 0 || (tienePocion && numero % 8 === 0)) {
-            premio = 500
-            texto = `🎲 *¡Premio!*\n\nGanaste *500 monedas*.\n\nNúmero: *${numero}*`
-        } else if (numero % 5 === 0 || (tienePocion && numero % 4 === 0)) {
-            premio = 200
-            texto = `🎲 *¡Pequeño premio!*\n\nGanaste *200 monedas*.\n\nNúmero: *${numero}*`
+        // 30% de probabilidad total de ganar algún premio (manteniendo
+        // el premio mayor como el más raro dentro de ese 30%).
+        const probGanar = tienePocion ? 0.35 : 0.3
+
+        if (Math.random() < probGanar) {
+            const rand = Math.random()
+            if (rand < 0.05) {
+                premio = PREMIO_MAYOR
+                texto = `🎰 *¡PREMIO MAYOR!*\n\n🎉 ¡Ganaste *${PREMIO_MAYOR} monedas*!\n\nNúmero ganador: *${numero}*`
+            } else if (rand < 0.35) {
+                premio = 500
+                texto = `🎲 *¡Premio!*\n\nGanaste *500 monedas*.\n\nNúmero: *${numero}*`
+            } else {
+                premio = 200
+                texto = `🎲 *¡Pequeño premio!*\n\nGanaste *200 monedas*.\n\nNúmero: *${numero}*`
+            }
         } else {
             texto = `😔 *Sin suerte esta vez.*\n\nNúmero: *${numero}*\n\n💡 ¡Intenta de nuevo!`
         }

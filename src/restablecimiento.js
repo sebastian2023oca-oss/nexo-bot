@@ -12,6 +12,7 @@ const confirmacionesPendientes = new Map() // jid -> timestamp
 // Lista de tablas que se vacían si existen (no todas existen siempre, según el estado del bot)
 const TABLAS_A_LIMPIAR = [
     'inventario_usuario',
+    'inventario',
     'bodega',
     'items_activos',
     'cooldowns',
@@ -64,7 +65,7 @@ const restablecimiento = {
         if (confirmacion?.toUpperCase() !== CONFIRMACION_TEXTO) {
             confirmacionesPendientes.set(userJid, Date.now())
             await sock.sendMessage(jid, {
-                text: `⚠️🚨 *RESTABLECIMIENTO TOTAL DEL SISTEMA* 🚨⚠️\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEsta acción es *IRREVERSIBLE* y va a:\n\n💀 Borrar TODAS las monedas, banco, XP, nivel, reputación e inventario de *TODOS* los usuarios.\n💀 Eliminar bodegas, ítems activos, cooldowns, préstamos, inversiones, insignias y estadísticas de casino.\n💀 Esto te afecta también a *TI*, incluyendo al dueño del bot.\n💀 No hay backup automático antes de esto.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📌 Si estás completamente seguro, escribe en los próximos *30 segundos*:\n\n*.restablecimiento ${CONFIRMACION_TEXTO}*\n\n💡 Tip: usa *.backup* antes de continuar si quieres poder recuperar los datos.`
+                text: `⚠️🚨 *RESTABLECIMIENTO TOTAL DEL SISTEMA* 🚨⚠️\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEsta acción es *IRREVERSIBLE* y va a:\n\n💀 Borrar TODAS las monedas, banco, XP, nivel, reputación de *TODOS* los usuarios.\n💀 Vaciar por completo el *inventario* y la *bodega* de cada usuario (todos los ítems, equipados o no, se pierden).\n💀 Eliminar ítems activos (pociones, escudos, boosts), cooldowns, préstamos, inversiones, insignias y estadísticas de casino.\n💀 Esto te afecta también a *TI*, incluyendo al dueño del bot.\n💀 No hay backup automático antes de esto.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📌 Si estás completamente seguro, escribe en los próximos *30 segundos*:\n\n*.restablecimiento ${CONFIRMACION_TEXTO}*\n\n💡 Tip: usa *.backup* antes de continuar si quieres poder recuperar los datos.`
             }, { quoted: mensaje })
             return
         }
@@ -113,22 +114,28 @@ const restablecimiento = {
             })
 
             // Vaciar tablas dependientes si existen
+            const tablasConError = []
+            const tablasNoExistentes = []
+
             for (const tabla of TABLAS_A_LIMPIAR) {
                 if (await tablaExiste(tabla)) {
                     try {
                         await db.execute(`TRUNCATE TABLE \`${tabla}\``)
                         tablasLimpiadas++
-                    } catch {
+                    } catch (errTruncate) {
                         // Si TRUNCATE falla por FK, intentar DELETE
                         try {
                             await db.execute(`DELETE FROM \`${tabla}\``)
                             tablasLimpiadas++
-                        } catch {
+                        } catch (errDelete) {
                             tablasOmitidas++
+                            tablasConError.push({ tabla, motivo: errDelete.message })
+                            console.error(`❌ No se pudo limpiar la tabla "${tabla}":`, errDelete.message)
                         }
                     }
                 } else {
                     tablasOmitidas++
+                    tablasNoExistentes.push(tabla)
                 }
             }
 
@@ -140,8 +147,12 @@ const restablecimiento = {
                 await db.execute('UPDATE casino_pozo_mundial SET pozo = 0 WHERE id = 1').catch(() => {})
             }
 
+            const detalleErrores = tablasConError.length > 0
+                ? `\n🚫 *Tablas que fallaron con error real:*\n${tablasConError.map(e => `   • \`${e.tabla}\`: ${e.motivo}`).join('\n')}\n`
+                : ''
+
             await sock.sendMessage(jid, {
-                text: `✅ *RESTABLECIMIENTO COMPLETADO*\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n💰 Todos los usuarios quedaron en *0 monedas, 0 banco, nivel 1, 0 XP, 0 reputación*.\n🗑️ *${tablasLimpiadas}* tablas relacionadas fueron vaciadas.\n${tablasOmitidas > 0 ? `⚠️ *${tablasOmitidas}* tablas no existían y fueron omitidas.\n` : ''}\n👑 *Ejecutado por:* @${userJid.split('@')[0]}\n📅 *Fecha:* ${new Date().toLocaleString('es-CO')}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🚀 Nexo-Bot ha vuelto a su estado inicial.`,
+                text: `✅ *RESTABLECIMIENTO COMPLETADO*\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n💰 Todos los usuarios quedaron en *0 monedas, 0 banco, nivel 1, 0 XP, 0 reputación*.\n🎒 *Inventario y bodega* de todos los usuarios vaciados por completo.\n🗑️ *${tablasLimpiadas}* tablas relacionadas fueron vaciadas correctamente.\n${tablasNoExistentes.length > 0 ? `ℹ️ *${tablasNoExistentes.length}* tablas no existían en la BD (normal si nunca se usaron): ${tablasNoExistentes.map(t => `\`${t}\``).join(', ')}\n` : ''}${detalleErrores}\n👑 *Ejecutado por:* @${userJid.split('@')[0]}\n📅 *Fecha:* ${new Date().toLocaleString('es-CO')}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🚀 Nexo-Bot ha vuelto a su estado inicial.`,
                 mentions: [userJid]
             }, { quoted: mensaje })
 

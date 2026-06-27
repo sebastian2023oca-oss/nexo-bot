@@ -57,8 +57,8 @@ const reycasino = {
             return
         }
 
-        // El reto: 45% de probabilidad de derrocar al rey (el rey tiene ventaja defendiendo)
-        const ganaRetador = Math.random() < 0.45
+        // El retador (quien ejecuta el comando) gana 30% de las veces
+        const ganaRetador = Math.random() < 0.3
         await db.execute('UPDATE usuarios SET monedas = monedas - ? WHERE jid = ?', [cantidad, ganaRetador ? rey.jid_rey : userJid])
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [cantidad, ganaRetador ? userJid : rey.jid_rey])
 

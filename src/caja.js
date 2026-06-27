@@ -35,15 +35,29 @@ const caja = {
             return
         }
 
-        // Multiplicadores posibles: 0x, 0.5x, 1x, 1.5x, 2x, 3x, 5x
-        const multiplicadores = [0, 0.5, 1, 1.5, 2, 3, 5]
-        const pesos =          [15, 20,  20, 20,  15, 7, 3]
-        const total = pesos.reduce((a, b) => a + b, 0)
-        let rand = Math.random() * total
-        let multiplicador = 1
-        for (let i = 0; i < pesos.length; i++) {
-            if (rand < pesos[i]) { multiplicador = multiplicadores[i]; break }
-            rand -= pesos[i]
+        // 30% de probabilidad de ganancia neta positiva (multiplicador > 1),
+        // 70% de pérdida (multiplicador < 1, incluyendo la caja vacía).
+        let multiplicador
+        if (Math.random() < 0.3) {
+            const multiplicadoresGanadores = [1.5, 2, 3, 5]
+            const pesosGanadores =          [45, 35, 15, 5]
+            const total = pesosGanadores.reduce((a, b) => a + b, 0)
+            let rand = Math.random() * total
+            multiplicador = multiplicadoresGanadores[multiplicadoresGanadores.length - 1]
+            for (let i = 0; i < pesosGanadores.length; i++) {
+                if (rand < pesosGanadores[i]) { multiplicador = multiplicadoresGanadores[i]; break }
+                rand -= pesosGanadores[i]
+            }
+        } else {
+            const multiplicadoresPerdedores = [0, 0.3, 0.5, 0.8]
+            const pesosPerdedores =           [35, 30, 25, 10]
+            const total = pesosPerdedores.reduce((a, b) => a + b, 0)
+            let rand = Math.random() * total
+            multiplicador = multiplicadoresPerdedores[multiplicadoresPerdedores.length - 1]
+            for (let i = 0; i < pesosPerdedores.length; i++) {
+                if (rand < pesosPerdedores[i]) { multiplicador = multiplicadoresPerdedores[i]; break }
+                rand -= pesosPerdedores[i]
+            }
         }
 
         const premio = Math.floor(cantidad * multiplicador)

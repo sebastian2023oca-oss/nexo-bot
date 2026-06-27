@@ -34,7 +34,7 @@ const apostar = {
             return
         }
 
-        const gano = Math.random() < 0.35
+        const gano = Math.random() < 0.3
         const multiplicador = gano ? (Math.random() < 0.2 ? 3 : 2) : 0
         const ganancia = gano ? cantidad * multiplicador - cantidad : -cantidad
 

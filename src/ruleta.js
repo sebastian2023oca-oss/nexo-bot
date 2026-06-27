@@ -50,7 +50,7 @@ const ruleta = {
             [userJid]
         )
         const tienePocion = pocion.length > 0
-        const probabilidad = tienePocion ? 0.65 : 0.5
+        const probabilidad = tienePocion ? 0.40 : 0.3
 
         const resultado = Math.random() < probabilidad ? apuesta : (apuesta === 'rojo' ? 'negro' : 'rojo')
         const gano = resultado === apuesta
@@ -63,7 +63,7 @@ const ruleta = {
 
         await registrarCooldown(userJid, 'ruleta', 15)
         const emoji = resultado === 'rojo' ? '🔴' : '⚫'
-        const pocionTexto = tienePocion ? '\n🧪 *Poción de suerte activa* (+15% probabilidad)' : ''
+        const pocionTexto = tienePocion ? '\n🧪 *Poción de suerte activa* (+10% probabilidad)' : ''
 
         await sock.sendMessage(jid, {
             text: `🎡 *RULETA*\n\n${emoji} Cayó *${resultado}*${pocionTexto}\n\n${gano ? `✅ ¡Ganaste *${cantidad} monedas*!` : `❌ Perdiste *${cantidad} monedas*.`}\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) + (gano ? cantidad : -cantidad)} monedas`

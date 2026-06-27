@@ -2,13 +2,16 @@ import db from './db.js'
 import { verificarCooldown, registrarCooldown } from './utils.js'
 import { registrarJugadaCasino } from './casinoUtils.js'
 
-const cofres = [
-    { emoji: '🟫', multiplicador: 0 },
-    { emoji: '🟦', multiplicador: 0.5 },
+const cofresGanadores = [
     { emoji: '🟩', multiplicador: 1.5 },
     { emoji: '🟨', multiplicador: 2.5 },
     { emoji: '🟪', multiplicador: 4 },
 ]
+const cofresPerdedores = [
+    { emoji: '🟫', multiplicador: 0 },
+    { emoji: '🟦', multiplicador: 0.5 },
+]
+const todosCofres = [...cofresPerdedores, ...cofresGanadores]
 
 const tesoro = {
     async ejecutar(sock, mensaje, args) {
@@ -43,7 +46,12 @@ const tesoro = {
             return
         }
 
-        const elegido = cofres[Math.floor(Math.random() * cofres.length)]
+        // 30% de probabilidad de ganancia neta positiva (cofre ganador),
+        // 70% de pérdida (cofre perdedor).
+        const gana = Math.random() < 0.3
+        const pool = gana ? cofresGanadores : cofresPerdedores
+        const elegido = pool[Math.floor(Math.random() * pool.length)]
+
         const premio = Math.floor(cantidad * elegido.multiplicador)
         const ganancia = premio - cantidad
 
@@ -51,7 +59,7 @@ const tesoro = {
         await registrarCooldown(userJid, 'tesoro', 12)
         await registrarJugadaCasino(userJid, 'tesoro', cantidad, ganancia >= 0 ? 'gano' : 'perdio', ganancia)
 
-        const linea = cofres.map(c => c.emoji).join(' ')
+        const linea = todosCofres.map(c => c.emoji).join(' ')
 
         await sock.sendMessage(jid, {
             text: `🗝️ *COFRE DEL TESORO*\n\n${linea}\n\n${elegido.emoji} *Abriste el cofre ${elegido.emoji}*\n📊 *Multiplicador:* x${elegido.multiplicador}\n\n💰 *Apostado:* ${cantidad} monedas\n🎁 *Obtenido:* ${premio} monedas\n${ganancia >= 0 ? '📈' : '📉'} *Resultado:* ${ganancia >= 0 ? '+' : ''}${ganancia} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad + premio} monedas`

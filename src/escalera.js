@@ -3,7 +3,6 @@ import { verificarCooldown, registrarCooldown } from './utils.js'
 import { registrarJugadaCasino } from './casinoUtils.js'
 
 const ESCALONES = 5
-const PROB_AVANZAR = 0.6
 const MULTIPLICADOR_POR_ESCALON = 0.8
 
 const escalera = {
@@ -39,17 +38,16 @@ const escalera = {
             return
         }
 
-        // Simula la escalera completa: en cada escalón, probabilidad de avanzar o caer
-        let escalon = 0
+        // Un solo check de 30/70: si gana, sube TODA la escalera hasta la
+        // cima; si pierde, cae de inmediato en el primer escalón.
+        const gana = Math.random() < 0.3
+        const escalon = gana ? ESCALONES : 0
+
         let detalle = ''
-        for (let i = 1; i <= ESCALONES; i++) {
-            if (Math.random() < PROB_AVANZAR) {
-                escalon = i
-                detalle += `🟩 Escalón ${i}: superado\n`
-            } else {
-                detalle += `🟥 Escalón ${i}: ¡resbalaste!\n`
-                break
-            }
+        if (gana) {
+            for (let i = 1; i <= ESCALONES; i++) detalle += `🟩 Escalón ${i}: superado\n`
+        } else {
+            detalle += `🟥 Escalón 1: ¡resbalaste!\n`
         }
 
         const multiplicador = 1 + (escalon * MULTIPLICADOR_POR_ESCALON)
@@ -61,7 +59,7 @@ const escalera = {
         await registrarJugadaCasino(userJid, 'escalera', cantidad, ganancia >= 0 ? 'gano' : 'perdio', ganancia)
 
         await sock.sendMessage(jid, {
-            text: `🪜 *ESCALERA DE LA SUERTE*\n\n${detalle}\n${escalon === ESCALONES ? '🏆 *¡LLEGASTE A LA CIMA!*\n' : escalon > 0 ? `🎯 *Llegaste al escalón ${escalon}/${ESCALONES}*\n` : '💀 *Te caíste en el primer escalón.*\n'}\n💰 *Apostado:* ${cantidad} monedas\n🎁 *Obtenido:* ${premio} monedas\n${ganancia >= 0 ? '📈' : '📉'} *Resultado:* ${ganancia >= 0 ? '+' : ''}${ganancia} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad + premio} monedas`
+            text: `🪜 *ESCALERA DE LA SUERTE*\n\n${detalle}\n${escalon === ESCALONES ? '🏆 *¡LLEGASTE A LA CIMA!*\n' : '💀 *Te caíste en el primer escalón.*\n'}\n💰 *Apostado:* ${cantidad} monedas\n🎁 *Obtenido:* ${premio} monedas\n${ganancia >= 0 ? '📈' : '📉'} *Resultado:* ${ganancia >= 0 ? '+' : ''}${ganancia} monedas\n\n💵 *Balance actual:* ${(rows[0].monedas || 0) - cantidad + premio} monedas`
         }, { quoted: mensaje })
     }
 }

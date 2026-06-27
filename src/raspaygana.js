@@ -4,10 +4,43 @@ import { registrarJugadaCasino } from './casinoUtils.js'
 
 const simbolos = ['🍒', '🍋', '🔔', '⭐', '💎']
 
-function generarTarjeta() {
-    const casillas = []
+// Genera una tarjeta de 9 casillas que NO tiene ninguna combinación de 3+
+function generarTarjetaSinCombinacion() {
+    let casillas
+    do {
+        casillas = []
+        for (let i = 0; i < 9; i++) {
+            casillas.push(simbolos[Math.floor(Math.random() * simbolos.length)])
+        }
+    } while (calcularPremio(casillas) > 0)
+    return casillas
+}
+
+// Genera una tarjeta de 9 casillas que SÍ tiene una combinación ganadora
+function generarTarjetaConCombinacion() {
+    const casillas = new Array(9).fill(null)
+    const simboloGanador = simbolos[Math.floor(Math.random() * simbolos.length)]
+
+    // Elegir cuántas veces aparece el símbolo ganador (3, 4 o 5) con pesos
+    const opciones = [3, 4, 5]
+    const pesos = [60, 30, 10]
+    const total = pesos.reduce((a, b) => a + b, 0)
+    let rand = Math.random() * total
+    let repeticiones = 3
+    for (let i = 0; i < pesos.length; i++) {
+        if (rand < pesos[i]) { repeticiones = opciones[i]; break }
+        rand -= pesos[i]
+    }
+
+    const indices = [...Array(9).keys()].sort(() => Math.random() - 0.5).slice(0, repeticiones)
+    for (const idx of indices) casillas[idx] = simboloGanador
+
     for (let i = 0; i < 9; i++) {
-        casillas.push(simbolos[Math.floor(Math.random() * simbolos.length)])
+        if (casillas[i] === null) {
+            let otro
+            do { otro = simbolos[Math.floor(Math.random() * simbolos.length)] } while (otro === simboloGanador)
+            casillas[i] = otro
+        }
     }
     return casillas
 }
@@ -56,7 +89,9 @@ const raspaygana = {
             return
         }
 
-        const casillas = generarTarjeta()
+        // 30% de probabilidad de obtener una combinación ganadora
+        const gana = Math.random() < 0.3
+        const casillas = gana ? generarTarjetaConCombinacion() : generarTarjetaSinCombinacion()
         const multiplicador = calcularPremio(casillas)
         const premio = Math.floor(cantidad * multiplicador)
         const ganancia = premio - cantidad

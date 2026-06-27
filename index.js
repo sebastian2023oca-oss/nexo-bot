@@ -56,7 +56,7 @@ const servidor = http.createServer(async (req, res) => {
 
 servidor.listen(4000, () => {
     console.log('\nServidor QR iniciado.')
-    console.log('   Abre tu navegador y entra a:  http://localhost:4000\n')
+    console.log('   Abre tu navegador y entra a:  http://194.163.171.14:4000\n')
 })
 
 async function iniciarBot() {
@@ -93,7 +93,7 @@ async function iniciarBot() {
 
         if (qr) {
             qrActual = qr
-            console.log('QR listo. Abre  http://localhost:4000  en tu navegador.')
+            console.log('QR listo. Abre  http://194.163.171.14:4000  en tu navegador.')
         }
 
         if (connection === 'close') {
@@ -134,13 +134,34 @@ async function iniciarBot() {
         if (type !== 'notify') return
 
         for (const mensaje of messages) {
-            if (!mensaje.key.fromMe) {
-                try {
-                    await manejarMensaje(sock, mensaje)
-                } catch (err) {
-                    console.log('Mensaje ignorado por error de cifrado')
-                }
+            sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        if (type !== 'notify') return
+
+        for (const mensaje of messages) {
+            // 1. Evitar errores si el mensaje viene vacío (muy común en Baileys)
+            if (!mensaje.message) continue;
+
+            // 2. Extraer el texto del mensaje según el formato de Baileys
+            const body = mensaje.message.conversation || 
+                         mensaje.message.extendedTextMessage?.text || 
+                         mensaje.message.imageMessage?.caption || 
+                         mensaje.message.videoMessage?.caption || 
+                         '';
+
+            // 3. Verificar si empieza con tu prefijo
+            const isCommand = body.startsWith('.');
+
+            // 4. LA NUEVA VALIDACIÓN: Si es del bot Y NO es un comando, lo ignoramos usando 'continue'
+            if (mensaje.key.fromMe && !isCommand) continue;
+
+            // 5. Si pasamos el filtro anterior, procesamos el mensaje en handler.js
+            try {
+                await manejarMensaje(sock, mensaje)
+            } catch (err) {
+                console.log('Mensaje ignorado por error de cifrado')
             }
+        }
+    })
         }
     })
 }

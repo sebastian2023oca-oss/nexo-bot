@@ -35,7 +35,7 @@ const doblenada = {
             return
         }
 
-        const gano = Math.random() < 0.48
+        const gano = Math.random() < 0.3
         const ganancia = gano ? cantidad : -cantidad
 
         await db.execute('UPDATE usuarios SET monedas = monedas + ? WHERE jid = ?', [ganancia, userJid])

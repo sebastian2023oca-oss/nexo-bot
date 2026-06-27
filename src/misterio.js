@@ -2,16 +2,18 @@ import db from './db.js'
 import { verificarCooldown, registrarCooldown, darXP } from './utils.js'
 import { registrarJugadaCasino } from './casinoUtils.js'
 
-const eventos = [
+const eventosGanadores = [
     { texto: '🛸 Un OVNI te regaló monedas extraterrestres', mult: 3 },
     { texto: '🎪 Encontraste un circo abandonado con un cofre', mult: 2 },
-    { texto: '🌪️ Un tornado se llevó parte de tu dinero', mult: 0.3 },
     { texto: '🧙 Un mago te triplicó la apuesta por diversión', mult: 3 },
     { texto: '🐉 Un dragón custodiaba el tesoro y te dejó pasar', mult: 2.5 },
-    { texto: '👻 Un fantasma te asustó y perdiste casi todo', mult: 0.1 },
     { texto: '🍄 Te encontraste con hongos mágicos y tu suerte cambió', mult: 1.8 },
-    { texto: '⚡ Un rayo cayó cerca y se quemaron tus monedas', mult: 0 },
     { texto: '🎁 Santa llegó adelantado este año', mult: 2 },
+]
+const eventosPerdedores = [
+    { texto: '🌪️ Un tornado se llevó parte de tu dinero', mult: 0.3 },
+    { texto: '👻 Un fantasma te asustó y perdiste casi todo', mult: 0.1 },
+    { texto: '⚡ Un rayo cayó cerca y se quemaron tus monedas', mult: 0 },
     { texto: '🕳️ Caíste en un hoyo negro económico', mult: 0.2 },
 ]
 
@@ -48,7 +50,11 @@ const misterio = {
             return
         }
 
-        const evento = eventos[Math.floor(Math.random() * eventos.length)]
+        // 30% de probabilidad de ganancia neta positiva
+        const gana = Math.random() < 0.3
+        const pool = gana ? eventosGanadores : eventosPerdedores
+        const evento = pool[Math.floor(Math.random() * pool.length)]
+
         const premio = Math.floor(cantidad * evento.mult)
         const ganancia = premio - cantidad
 
