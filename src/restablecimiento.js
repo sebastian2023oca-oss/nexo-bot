@@ -40,14 +40,12 @@ const TABLAS_A_LIMPIAR = [
     'warns',
 ]
 
-async function tablaExiste(nombre) {
-    try {
-        const [rows] = await db.execute('SHOW TABLES LIKE ?', [nombre])
-        return rows.length > 0
-    } catch {
-        return false
-    }
-}
+// Nota: la verificación de existencia de tablas ahora se hace de forma
+// directa al intentar el TRUNCATE/DELETE (ver más abajo), distinguiendo
+// el error específico de "tabla no existe" (errno 1146) de errores reales.
+// Antes se usaba SHOW TABLES LIKE con prepared statement, lo cual fallaba
+// silenciosamente en algunos entornos de mysql2 y reportaba "no existe"
+// para tablas que sí existían.
 
 const restablecimiento = {
     async ejecutar(sock, mensaje, args) {
@@ -113,38 +111,45 @@ const restablecimiento = {
                 await db.execute(`UPDATE usuarios SET nivel = 1, xp = 0, monedas = 0, banco = 0, vip = 0, negocio = 0, reputacion = 0`)
             })
 
-            // Vaciar tablas dependientes si existen
+            // Vaciar tablas dependientes. Se intenta directamente sin
+            // depender solo de tablaExiste(), distinguiendo el error
+            // específico "la tabla no existe" (ER_NO_SUCH_TABLE / errno 1146)
+            // de cualquier otro error real (FK, permisos, etc.).
             const tablasConError = []
             const tablasNoExistentes = []
 
             for (const tabla of TABLAS_A_LIMPIAR) {
-                if (await tablaExiste(tabla)) {
-                    try {
-                        await db.execute(`TRUNCATE TABLE \`${tabla}\``)
-                        tablasLimpiadas++
-                    } catch (errTruncate) {
-                        // Si TRUNCATE falla por FK, intentar DELETE
-                        try {
-                            await db.execute(`DELETE FROM \`${tabla}\``)
-                            tablasLimpiadas++
-                        } catch (errDelete) {
-                            tablasOmitidas++
-                            tablasConError.push({ tabla, motivo: errDelete.message })
-                            console.error(`❌ No se pudo limpiar la tabla "${tabla}":`, errDelete.message)
-                        }
+                try {
+                    await db.execute(`TRUNCATE TABLE \`${tabla}\``)
+                    tablasLimpiadas++
+                } catch (errTruncate) {
+                    if (errTruncate.errno === 1146 || errTruncate.code === 'ER_NO_SUCH_TABLE') {
+                        tablasOmitidas++
+                        tablasNoExistentes.push(tabla)
+                        continue
                     }
-                } else {
-                    tablasOmitidas++
-                    tablasNoExistentes.push(tabla)
+                    // Si TRUNCATE falla por FK u otro motivo, intentar DELETE
+                    try {
+                        await db.execute(`DELETE FROM \`${tabla}\``)
+                        tablasLimpiadas++
+                    } catch (errDelete) {
+                        tablasOmitidas++
+                        tablasConError.push({ tabla, motivo: errDelete.message })
+                        console.error(`❌ No se pudo limpiar la tabla "${tabla}":`, errDelete.message)
+                    }
                 }
             }
 
-            // Reiniciar pozos globales de casino si existen
-            if (await tablaExiste('casino_jackpot')) {
-                await db.execute('UPDATE casino_jackpot SET pozo = 0 WHERE id = 1').catch(() => {})
-            }
-            if (await tablaExiste('casino_pozo_mundial')) {
-                await db.execute('UPDATE casino_pozo_mundial SET pozo = 0 WHERE id = 1').catch(() => {})
+            // Reiniciar pozos globales de casino (mismo patrón: intento
+            // directo, se ignora solo si la tabla específicamente no existe)
+            for (const tablaPozo of ['casino_jackpot', 'casino_pozo_mundial']) {
+                try {
+                    await db.execute(`UPDATE \`${tablaPozo}\` SET pozo = 0 WHERE id = 1`)
+                } catch (err) {
+                    if (err.errno !== 1146 && err.code !== 'ER_NO_SUCH_TABLE') {
+                        console.error(`⚠️ No se pudo reiniciar el pozo de "${tablaPozo}":`, err.message)
+                    }
+                }
             }
 
             const detalleErrores = tablasConError.length > 0
