@@ -592,9 +592,7 @@ export async function manejarMensaje(sock, mensaje) {
     // Detectar imagen, sticker o video → desequipar capa_sigilo
     const tipoMensaje = Object.keys(mensaje.message || {})[0]
     if (esGrupo && ['imageMessage', 'stickerMessage', 'videoMessage'].includes(tipoMensaje)) {
-        const userJidMedia = mensaje.key.fromMe
-            ? (sock.user?.id?.split(':')[0] + '@s.whatsapp.net')
-            : (mensaje.key.participant || mensaje.key.remoteJid)
+        const userJidMedia = mensaje.key.participant || mensaje.key.remoteJid
         try {
             const [tieneCapa] = await db.execute(
                 'SELECT * FROM items_activos WHERE jid = ? AND item = "capa_sigilo" AND expira > NOW()',
@@ -640,16 +638,6 @@ export async function manejarMensaje(sock, mensaje) {
 
     const comando = comandos[cmd]
     if (!comando) return
-
-    // Cuando el mensaje es propio (fromMe), Baileys no rellena
-    // mensaje.key.participant (ese campo solo se usa para terceros).
-    // Lo normalizamos aquí con el JID real de la sesión activa para que
-    // TODOS los comandos (que leen mensaje.key.participant || remoteJid
-    // directamente) reciban el JID correcto del dueño, y no el JID del
-    // grupo, cuando el dueño escribe comandos desde su propio número.
-    if (mensaje.key.fromMe && esGrupo && !mensaje.key.participant) {
-        mensaje.key.participant = sock.user?.id?.split(':')[0] + '@s.whatsapp.net'
-    }
 
     const userJid = mensaje.key.participant || mensaje.key.remoteJid
     const esOw = await esOwner(userJid)
