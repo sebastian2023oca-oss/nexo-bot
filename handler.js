@@ -642,45 +642,30 @@ export async function manejarMensaje(sock, mensaje) {
     const userJid = mensaje.key.participant || mensaje.key.remoteJid
     const esOw = await esOwner(userJid)
 
-    // ── MANTENIMIENTO / EMERGENCIA / APAGADO SEGURO ───────────────
-    // Los owners SIEMPRE pueden seguir operando (necesitan poder
-    // desactivar el mantenimiento, revisar logs, etc. incluso con
-    // el bot "apagado" para el resto). El resto de usuarios queda
-    // bloqueado por completo mientras cualquiera de estos esté activo.
+    // ── MANTENIMIENTO / EMERGENCIA / APAGADO SEGURO Y ANTI-BANEO ──
     if (!esOw) {
         const mant = await estaEnMantenimiento()
         if (mant.activo) {
-            // Silencioso: no respondemos nada para no generar tráfico
-            // adicional durante una emergencia o mantenimiento activo.
+            console.log(`[SILENCIO] Comando .${cmd} de ${userJid} ignorado: Mantenimiento activo.`)
             return
         }
 
         if (await estaEnApagadoSeguro()) {
+            console.log(`[SILENCIO] Comando .${cmd} de ${userJid} ignorado: Apagado Seguro activo.`)
             return
         }
 
-        // ── RAMPA DE ACTIVACIÓN GRADUAL (solo aplica en grupos) ──
         if (esGrupo) {
             const rampa = await verificarRampa(jid)
             if (!rampa.permitido) {
-                // No respondemos para no generar más tráfico desde un
-                // grupo que precisamente estamos intentando NO atender
-                // todavía durante la rampa de activación.
+                console.log(`[SILENCIO] Comando .${cmd} de ${userJid} ignorado: Rampa bloquea el grupo ${jid}.`)
                 return
             }
         }
-    }
-    // ────────────────────────────────────────────────────────────────
 
-    // ── ANTI-BANEO: flood y spam interno ──────────────────────────
-    // Los owners quedan exentos de los límites de flood (necesitan
-    // poder usar comandos de administración sin trabas), pero el
-    // resto de usuarios pasa por los checks antes de tocar la BD.
-    if (!esOw) {
         const flood = verificarFlood(userJid, esGrupo ? jid : null)
         if (flood.bloqueado) {
-            // Bloqueo silencioso salvo en límites largos, para no generar
-            // más tráfico de respuestas durante un pico de flood.
+            console.log(`[SILENCIO] Comando .${cmd} de ${userJid} ignorado: Anti-Flood (${flood.motivo}).`)
             if (flood.motivo === 'limite_hora' || flood.motivo === 'spam_repetido') {
                 await sock.sendMessage(jid, {
                     text: `⏳ Estás usando comandos muy rápido. Espera *${flood.minutosRestantes} min* antes de continuar.`
@@ -690,12 +675,11 @@ export async function manejarMensaje(sock, mensaje) {
         }
 
         if (verificarSpamInterno(userJid, cmd, args)) {
+            console.log(`[SILENCIO] Comando .${cmd} de ${userJid} ignorado: Spam interno repetido.`)
             await sock.sendMessage(jid, {
                 text: `🚫 *Comando repetido detectado.*\n\nEspera *1 minuto* antes de volver a usar *.${cmd}* con los mismos parámetros.`
             }, { quoted: mensaje })
 
-            // El spam repetido también afecta la reputación del GRUPO
-            // donde ocurrió (no solo penaliza al usuario individual).
             if (esGrupo) {
                 registrarIncidente(jid, 'spam_interno', `Comando repetido: .${cmd}`)
             }
